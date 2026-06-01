@@ -135,8 +135,8 @@ details .details-body{padding:12px 14px}
   <div class="section-label">Solution Architecture</div>
   <h2>How Kubernaut is built</h2>
 
-  <p class="secondary">Kubernaut is a CRD-native microservices platform written in Go. It consists of 11 independently deployed services, each responsible for one stage of the remediation lifecycle. Services communicate primarily through Kubernetes CRD status transitions, not direct service-to-service calls. Each controller watches a CRD, performs its work, and writes results back to the CRD status. The two exceptions are the KubernautAgent (called via HTTP by AIAnalysis for LLM investigation) and DataStorage (called via HTTP by services that need persistence, audit, or catalog queries). A central controller called the RemediationOrchestrator reads those statuses and advances the pipeline by creating the next CRD in the chain.</p>
-  <p class="secondary">This design means all state lives in etcd. Every decision the platform makes is observable via <code>kubectl get remediationrequests</code>. If any service crashes, the controller-runtime reconciliation loop automatically restarts from the last persisted state. There is no in-memory state to lose.</p>
+  <p class="secondary">Kubernaut is a microservices platform written in Go. It consists of 11 independently deployed, stateless services. The platform uses two complementary communication patterns: CRD controllers watch Kubernetes custom resources and drive the remediation pipeline through status transitions (all pipeline state lives in etcd), while several services also expose REST APIs via OpenAPI specs for synchronous operations. The Gateway receives AlertManager webhooks and creates CRDs. DataStorage manages PostgreSQL persistence and exposes a REST API for audit, workflow catalog, and remediation history queries. KubernautAgent exposes REST and MCP endpoints for LLM investigation. APIFrontend exposes MCP and A2A endpoints for external agent integration. DataStorage uses a Valkey instance as a dead-letter queue for audit events when PostgreSQL is unavailable, and all services implement graceful shutdown with audit buffer flushing to minimize audit event loss. A central controller called the RemediationOrchestrator reads those statuses and advances the pipeline by creating the next CRD in the chain.</p>
+  <p class="secondary">Pipeline state lives in etcd via CRDs -- every decision the platform makes is observable via <code>kubectl get remediationrequests</code>. Persistent data (audit trails, workflow catalog, remediation history, effectiveness scores) lives in PostgreSQL via the DataStorage service. If any service crashes, CRD controllers restart from the last persisted state via controller-runtime reconciliation. Audit events are buffered in-memory and flushed on graceful shutdown; if PostgreSQL is unavailable, DataStorage uses Valkey as a dead-letter queue to prevent audit loss.</p>
 
   <!-- Diagram -->
   <div style="border:1px solid var(--stroke-primary);border-radius:8px;padding:20px;background:var(--fill-tertiary);overflow-x:auto">
@@ -179,9 +179,14 @@ details .details-body{padding:12px 14px}
         <div class="small semibold" style="color:var(--success)">Verify</div>
         <div class="small quaternary">effectiveness</div>
       </div>
+      <div style="color:var(--text-tertiary);font-size:18px">&rarr;</div>
+      <div style="text-align:center;padding:8px 14px;border:1px solid var(--stroke-primary);border-radius:6px">
+        <div class="small semibold">Notify</div>
+        <div class="small quaternary">Slack / console</div>
+      </div>
     </div>
     <div style="text-align:center;margin-top:10px">
-      <span class="small quaternary">Each box is a separate microservice. RemediationRequest CRD orchestrates the flow. RO controller drives phase transitions.</span>
+      <span class="small quaternary">Each box is a separate stateless microservice. RemediationRequest CRD orchestrates the flow. RO controller drives phase transitions.</span>
     </div>
   </div>
 
