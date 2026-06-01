@@ -316,6 +316,38 @@ details .details-body{padding:12px 14px}
 <!-- ============================================================ -->
 <div class="tab-panel" id="tab-differentiation">
 <div class="stack gap-10">
+
+  <!-- AGENTIC POSITIONING -->
+  <h2>Where Kubernaut sits on the autonomy spectrum</h2>
+  <p class="secondary">Kubernaut is <strong>agentic where it's safe, constrained where it's risky.</strong> This is not a limitation -- it's a deliberate architectural decision that makes it enterprise-adoptable.</p>
+
+  <div class="row gap-10" style="align-items:stretch;margin-top:4px">
+    <div class="flow-step"><div class="step-num">LEFT</div><div class="step-title">Rule-based</div><div class="step-detail">EDA, StackStorm. No AI. Static if-then rules. Deterministic but can't handle novel scenarios. Same symptom, same action -- regardless of root cause.</div></div>
+    <div class="flow-step accent"><div class="step-num">CENTER</div><div class="step-title">Kubernaut (hybrid)</div><div class="step-detail">AI investigates freely (agentic). AI recommends from a catalog (constrained). Execution is deterministic (Tekton/Job/Ansible). Governance is policy-driven (OPA). Trust is progressive (L1-L4).</div></div>
+    <div class="flow-step"><div class="step-num">RIGHT</div><div class="step-title">Fully agentic</div><div class="step-detail">Pulse Agent, Devin-style. AI decides AND executes. Generates and applies patches directly. Flexible but unpredictable. Trust is binary -- on or off.</div></div>
+  </div>
+
+  <h3>Kubernaut vs fully agentic: what's different</h3>
+  <table>
+    <tr><th>Dimension</th><th>Fully Agentic</th><th>Kubernaut</th></tr>
+    <tr class="striped"><td><span class="semibold">Investigation</span></td><td>Agent reads cluster ad-hoc</td><td>Agent reads cluster ad-hoc (same -- this part IS agentic)</td></tr>
+    <tr class="striped"><td><span class="semibold">Fix generation</span></td><td>Agent generates patches/commands</td><td>Agent selects from pre-approved workflow catalog</td></tr>
+    <tr class="striped"><td><span class="semibold">Execution</span></td><td>Agent applies fixes directly</td><td>Separate controller applies fixes with dedicated ServiceAccount</td></tr>
+    <tr class="striped"><td><span class="semibold">Governance</span></td><td>Trust levels (binary or tiered)</td><td>OPA Rego policies + approval CRD + shadow agent</td></tr>
+    <tr class="striped"><td><span class="semibold">Blast radius</span></td><td>Agent's permissions = blast radius</td><td>Workflow's ServiceAccount = blast radius (scoped per workflow)</td></tr>
+    <tr class="striped"><td><span class="semibold">Auditability</span></td><td>Varies (logs, DB)</td><td>Every step is a K8s CRD (kubectl observable) + PostgreSQL audit trail</td></tr>
+    <tr class="striped"><td><span class="semibold">Failure mode</span></td><td>Agent makes wrong patch, hard to undo</td><td>Wrong workflow selected, but workflow is pre-tested and rollback-capable</td></tr>
+    <tr class="striped"><td><span class="semibold">Adoption path</span></td><td>"Turn it on and hope"</td><td>Progressive trust ladder (observe / approve / selective / full)</td></tr>
+  </table>
+
+  <div class="callout info">
+    <div class="callout-title">The one-sentence pitch</div>
+    <p class="small secondary">Kubernaut is agentic for investigation -- the AI has full autonomy to read your cluster and figure out what's wrong. But for remediation, it's constrained by design: the AI recommends from a catalog of pre-tested workflows, OPA policies gate every action, and execution runs through Tekton or Ansible with dedicated credentials. The AI never has the permissions to break your cluster.</p>
+  </div>
+
+  <hr>
+
+  <!-- DEPTH TABLE -->
   <h2>What Kubernaut covers that others don't</h2>
   <table>
     <tr><th>Layer</th><th>What it covers</th><th>Who else does this</th><th>Kubernaut</th></tr>
