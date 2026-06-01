@@ -122,10 +122,119 @@ details .details-body{padding:12px 14px}
 
 <hr>
 
-<!-- MINUTE 2: HOW IT WORKS -->
+<!-- ARCHITECTURE -->
 <div class="stack gap-10">
-  <div class="section-label">Minute 2 -- How It Works</div>
-  <h2>The remediation pipeline: 5 phases, all CRD-native</h2>
+  <div class="section-label">Architecture Overview</div>
+  <h2>11 microservices, 9 CRDs, one pipeline</h2>
+  <p class="secondary">Kubernaut is not a single binary -- it's a full microservices platform where every service has a dedicated role, and all inter-service communication happens through Kubernetes CRD status transitions. All state lives in etcd. Every decision is observable via <code>kubectl get</code>.</p>
+
+  <!-- Architecture Diagram -->
+  <div style="border:1px solid var(--stroke-primary);border-radius:8px;padding:20px;background:var(--fill-tertiary);overflow-x:auto">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;min-width:700px">
+      <!-- Sources -->
+      <div style="text-align:center;padding:8px 12px;border:1px solid var(--stroke-secondary);border-radius:6px;min-width:100px">
+        <div class="small semibold">AlertManager</div>
+        <div class="small quaternary">webhook</div>
+      </div>
+      <div style="text-align:center;padding:8px 12px;border:1px solid var(--stroke-secondary);border-radius:6px;min-width:100px">
+        <div class="small semibold">K8s Events</div>
+        <div class="small quaternary">watch</div>
+      </div>
+      <div style="color:var(--text-tertiary);font-size:18px">&rarr;</div>
+      <!-- Gateway -->
+      <div style="text-align:center;padding:8px 14px;border:2px solid var(--accent);border-radius:6px;background:var(--accent-dim)">
+        <div class="small semibold" style="color:var(--accent)">Gateway</div>
+        <div class="small quaternary">dedup + create RR</div>
+      </div>
+      <div style="color:var(--text-tertiary);font-size:18px">&rarr;</div>
+      <!-- SP -->
+      <div style="text-align:center;padding:8px 14px;border:1px solid var(--stroke-primary);border-radius:6px">
+        <div class="small semibold">Signal Processing</div>
+        <div class="small quaternary">OPA classify</div>
+      </div>
+      <div style="color:var(--text-tertiary);font-size:18px">&rarr;</div>
+      <!-- KA -->
+      <div style="text-align:center;padding:8px 14px;border:2px solid var(--accent);border-radius:6px;background:var(--accent-dim)">
+        <div class="small semibold" style="color:var(--accent)">Kubernaut Agent</div>
+        <div class="small quaternary">LLM investigation</div>
+      </div>
+      <div style="color:var(--text-tertiary);font-size:18px">&rarr;</div>
+      <!-- Approval -->
+      <div style="text-align:center;padding:8px 14px;border:1px solid var(--danger);border-radius:6px">
+        <div class="small semibold" style="color:var(--danger)">Approval</div>
+        <div class="small quaternary">OPA / human</div>
+      </div>
+      <div style="color:var(--text-tertiary);font-size:18px">&rarr;</div>
+      <!-- WFE -->
+      <div style="text-align:center;padding:8px 14px;border:1px solid var(--stroke-primary);border-radius:6px">
+        <div class="small semibold">Workflow Exec</div>
+        <div class="small quaternary">Tekton/Job/AWX</div>
+      </div>
+      <div style="color:var(--text-tertiary);font-size:18px">&rarr;</div>
+      <!-- EM -->
+      <div style="text-align:center;padding:8px 14px;border:1px solid var(--success);border-radius:6px">
+        <div class="small semibold" style="color:var(--success)">Verify</div>
+        <div class="small quaternary">effectiveness</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:10px">
+      <span class="small quaternary">RemediationRequest CRD orchestrates the entire flow &bull; Each box is a separate microservice &bull; RO controller drives phase transitions</span>
+    </div>
+  </div>
+
+  <!-- Services Table -->
+  <h3>The 11 services</h3>
+  <table>
+    <tr><th>Service</th><th>Role</th><th>Key technology</th></tr>
+    <tr class="striped"><td><span class="semibold">Gateway</span></td><td>Alert ingestion, fingerprint dedup, creates RemediationRequest CRD</td><td>AlertManager v4 webhook, SHA256, K8s Lease lock</td></tr>
+    <tr class="striped"><td><span class="semibold">SignalProcessing</span></td><td>Enriches signals with K8s context, classifies via policy</td><td>OPA Rego (4 prepared queries), owner chain traversal</td></tr>
+    <tr class="striped"><td><span class="semibold">AIAnalysis</span></td><td>Triggers LLM investigation, evaluates approval policy</td><td>Separate approval.rego, HTTP to KubernautAgent</td></tr>
+    <tr class="striped row-info"><td><span class="semibold">KubernautAgent</span></td><td>LLM-powered root cause analysis + workflow selection</td><td>Two-phase agent loop, 36 read-only tools, 10 LLM providers</td></tr>
+    <tr class="striped"><td><span class="semibold">RemediationOrchestrator</span></td><td>Pipeline state machine -- drives all phase transitions</td><td>12 phases, timeouts, routing, backoff, distributed locking</td></tr>
+    <tr class="striped"><td><span class="semibold">WorkflowExecution</span></td><td>Runs the actual remediation</td><td>Tekton PipelineRun, K8s Job, Ansible/AWX</td></tr>
+    <tr class="striped"><td><span class="semibold">EffectivenessMonitor</span></td><td>Verifies the fix worked</td><td>Health, alert resolution, metrics, spec hash drift</td></tr>
+    <tr class="striped"><td><span class="semibold">Notification</span></td><td>Alerts the team</td><td>Slack webhooks, circuit breaker, routing rules</td></tr>
+    <tr class="striped"><td><span class="semibold">DataStorage</span></td><td>Persistence, audit trail, workflow catalog</td><td>PostgreSQL (partitioned), OpenAPI, hash-chain audit</td></tr>
+    <tr class="striped"><td><span class="semibold">AuthWebhook</span></td><td>CRD admission control</td><td>Validating webhook</td></tr>
+    <tr class="striped"><td><span class="semibold">APIFrontend</span> <span class="pill info" style="font-size:9px">v1.5</span></td><td>Human-in-the-loop MCP/A2A gateway</td><td>MCP go-sdk, OIDC, Streamable HTTP</td></tr>
+  </table>
+
+  <!-- CRDs -->
+  <h3>The 9 CRDs</h3>
+  <p class="secondary small">Every step in the pipeline is a Kubernetes custom resource. Each controller watches its CRD, does its work, and updates status. The RemediationOrchestrator reads those statuses and advances the pipeline. Crash recovery is free -- controller-runtime reconciliation restarts from the last persisted state.</p>
+  <div class="row gap-8" style="flex-wrap:wrap;margin-top:4px">
+    <span class="pill info active">RemediationRequest</span>
+    <span class="pill">SignalProcessing</span>
+    <span class="pill">AIAnalysis</span>
+    <span class="pill danger">RemediationApprovalRequest</span>
+    <span class="pill">RemediationWorkflow</span>
+    <span class="pill">WorkflowExecution</span>
+    <span class="pill">NotificationRequest</span>
+    <span class="pill success">EffectivenessAssessment</span>
+    <span class="pill">ActionType</span>
+  </div>
+
+  <!-- Platform stats -->
+  <div class="grid-4" style="margin-top:8px">
+    <div class="stat"><div class="stat-value">11</div><div class="stat-label">Microservices</div></div>
+    <div class="stat"><div class="stat-value">9</div><div class="stat-label">Custom CRDs</div></div>
+    <div class="stat"><div class="stat-value">10</div><div class="stat-label">LLM Providers</div></div>
+    <div class="stat"><div class="stat-value">36</div><div class="stat-label">Agent Tools</div></div>
+  </div>
+
+  <!-- Operator -->
+  <div class="callout neutral">
+    <div class="callout-title">Deployment: OLM Operator</div>
+    <p class="small secondary">The kubernaut-operator deploys and manages the entire platform via a single <code>Kubernaut</code> CR. One CR = all 11 services + RBAC + webhooks + monitoring + OCP Routes + DB migrations. OLM bundle with 14 digest-pinned images for disconnected/airgap registries. BYO PostgreSQL + Valkey. OpenShift 4.18+.</p>
+  </div>
+</div>
+
+<hr>
+
+<!-- HOW IT WORKS (PIPELINE DETAIL) -->
+<div class="stack gap-10">
+  <div class="section-label">Pipeline Detail</div>
+  <h2>The remediation pipeline: 5 phases</h2>
   <p class="secondary">Every phase is a Kubernetes CRD with status transitions. All state in etcd. All communication via CRD status. Standard kubectl tooling. 9 purpose-built CRDs define the entire lifecycle.</p>
 
   <div class="callout neutral">
