@@ -396,7 +396,7 @@ details .details-body{padding:12px 14px}
   </div>
   <table>
     <tr><th>Milestone</th><th>Focus</th><th>Key capabilities</th></tr>
-    <tr class="striped row-info"><td>v1.5 (Q2 2026)</td><td>Agentic Integration</td><td>MCP/A2A, RHDH Console Plugin, real-time streaming, NL signal intake</td></tr>
+    <tr class="striped row-info"><td>v1.5 (Q2 2026)</td><td>Agentic Integration</td><td>MCP/A2A, real-time streaming, NL signal intake</td></tr>
     <tr class="striped"><td>Next</td><td>Collective Intelligence</td><td>Multi-agent consensus RCA, cross-LLM benchmarking, forensic replay</td></tr>
     <tr class="striped"><td>Next</td><td>Fleet Operations</td><td>Multi-cluster via ACM, cross-cluster MCP investigation, AAP workflows</td></tr>
     <tr class="striped"><td>Future</td><td>Operational Expansion</td><td>Cost optimization, threat remediation (security), cloud infra</td></tr>
@@ -438,7 +438,7 @@ details .details-body{padding:12px 14px}
         <p class="small">Shadow agent only covers autonomous path, not MCP interactive</p>
         <p class="small">Ansible executor needs external AWX (not included in deploy)</p>
         <p class="small">MCP "start_autonomous" action is a broken stub (returns nil)</p>
-        <p class="small">Single maintainer, 18 GitHub stars, no documented production use</p>
+        <p class="small">Single maintainer, early-stage community (18 GitHub stars)</p>
       </div>
     </div>
   </div>
@@ -478,8 +478,8 @@ details .details-body{padding:12px 14px}
   <details open>
     <summary>"What about OpenShift Lightspeed?" <span class="pill" style="font-size:10px">OCP native</span></summary>
     <div class="details-body stack gap-6">
-      <p class="small semibold">Lightspeed is a conversational assistant. Kubernaut is an autonomous remediation pipeline.</p>
-      <p class="small secondary">Lightspeed answers questions about your cluster and can query resources via its Observability MCP server. But it does not execute remediation workflows, maintain a workflow catalog, run OPA approval gates, verify fixes, or learn from outcomes. Kubernaut is a closed-loop remediation engine. They are complementary: Kubernaut's MCP tools could be registered as a Lightspeed MCP server, so an SRE could ask Lightspeed "investigate this alert" and Lightspeed would delegate to Kubernaut.</p>
+      <p class="small semibold">Lightspeed is a cluster assistant. Kubernaut is an autonomous remediation platform with conversational capabilities.</p>
+      <p class="small secondary">With v1.5, Kubernaut is also conversational -- it supports natural language signal intake and interactive MCP sessions. But its core differentiator is what happens after the conversation: it executes remediation workflows from a curated catalog, runs OPA approval gates, verifies fixes, and learns from outcomes. Lightspeed provides cluster Q&amp;A and resource queries. Kubernaut provides the full closed-loop remediation engine. They are complementary: Kubernaut's MCP tools could be registered as a Lightspeed MCP server, so an SRE could ask Lightspeed "investigate this alert" and Lightspeed would delegate to Kubernaut.</p>
     </div>
   </details>
 
@@ -521,7 +521,7 @@ details .details-body{padding:12px 14px}
     <div class="details-body stack gap-6">
       <p class="small semibold">That is the rule-based approach. Kubernaut handles the long tail.</p>
       <p class="small secondary">EDA + Dynatrace is the "thermostat" pattern: if CPU exceeds 90%, run scale-up playbook. Works for known scenarios. But when CrashLoopBackOff has 10 different root causes (bad config, OOM, dependency failure, cert expiry, image pull error), a static rule cannot distinguish them. Kubernaut's AI investigates the actual cause and selects the right workflow.</p>
-      <p class="small secondary">Real example: a CrashLoopBackOff caused by a broken ConfigMap pushed via ArgoCD. The LLM traced Pod to logs to ConfigMap to ArgoCD annotations, determined it was GitOps-managed, and selected git-revert instead of kubectl patch. A rule-based system would need a specific rule for that exact scenario.</p>
+      <p class="small secondary">Real example: a CrashLoopBackOff caused by a broken ConfigMap pushed via ArgoCD. The agent traced Pod to logs to ConfigMap to ArgoCD annotations, determined it was GitOps-managed, and selected git-revert instead of kubectl patch. A rule-based system would need a specific rule for that exact scenario.</p>
     </div>
   </details>
 
