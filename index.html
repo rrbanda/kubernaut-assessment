@@ -131,9 +131,10 @@ details .details-body{padding:12px 14px}
 <!-- ============================================================ -->
 <div class="tab-panel active" id="tab-problem">
 <div class="stack gap-10">
-  <h2>When a pod crashes at 3 AM</h2>
-  <p class="secondary">Detection and correlation are solved. Prometheus fires an alert in seconds. PagerDuty pages an SRE in under a minute. The problem starts after that: root cause analysis, fix selection, execution, and verification are still manual. That is 60+ minutes of human toil per incident, and it depends entirely on who is on call and what they know.</p>
-  <p class="secondary">Scale makes it worse. More clusters, more microservices, more alerts, same team. Alert fatigue sets in. Incidents get missed. MTTR keeps climbing.</p>
+  <h2>What happens when something breaks in your cluster</h2>
+  <p class="secondary">Today, when a pod crashes or a service degrades, Prometheus detects it and pages your team within a minute. That part works. But then an SRE has to manually investigate: check pod status, read logs, query metrics, trace dependencies, figure out the root cause, find the right fix, apply it, and verify it actually worked. That takes 30 to 60+ minutes per incident -- and the quality depends on who is on call and what they happen to know.</p>
+  <p class="secondary">As your clusters grow, this doesn't scale. More microservices means more alerts. Same team. Alert fatigue sets in, incidents get missed, and mean time to recovery keeps climbing.</p>
+  <p class="secondary">Kubernaut automates the entire process after detection: root cause analysis, fix selection, execution, and verification.</p>
   <div class="grid-4">
     <div class="stat danger"><div class="stat-value">82%</div><div class="stat-label">Orgs with MTTR &gt;1 hour</div></div>
     <div class="stat danger"><div class="stat-value">73%</div><div class="stat-label">Outages from ignored alerts</div></div>
