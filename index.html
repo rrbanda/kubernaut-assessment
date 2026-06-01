@@ -214,14 +214,14 @@ code{font-family:'JetBrains Mono',Consolas,'Courier New',monospace;font-size:0.8
     <tr class="striped"><td><span class="semibold">APIFrontend</span></td><td>External agent integration gateway</td><td>MCP go-sdk, A2A, OIDC, Streamable HTTP</td></tr>
   </table>
 
-  <h3>The 9 CRDs</h3>
+  <h3>The 10 CRDs</h3>
   <p class="secondary small">Every pipeline step is a Kubernetes custom resource under the <code>kubernaut.ai</code> API group. Crash recovery is built-in via controller-runtime reconciliation.</p>
   <div class="row gap-8" style="flex-wrap:wrap;margin-top:4px">
-    <span class="pill info active">RemediationRequest</span><span class="pill">SignalProcessing</span><span class="pill">AIAnalysis</span><span class="pill danger">RemediationApprovalRequest</span><span class="pill">RemediationWorkflow</span><span class="pill">WorkflowExecution</span><span class="pill">NotificationRequest</span><span class="pill success">EffectivenessAssessment</span><span class="pill">ActionType</span>
+    <span class="pill info active">RemediationRequest</span><span class="pill">SignalProcessing</span><span class="pill">AIAnalysis</span><span class="pill danger">RemediationApprovalRequest</span><span class="pill">RemediationWorkflow</span><span class="pill">WorkflowExecution</span><span class="pill">NotificationRequest</span><span class="pill success">EffectivenessAssessment</span><span class="pill">ActionType</span><span class="pill info">InvestigationSession <span style="font-size:9px;opacity:0.7">v1.5</span></span>
   </div>
   <div class="grid-4" style="margin-top:8px">
     <div class="stat"><div class="stat-value">11</div><div class="stat-label">Microservices</div></div>
-    <div class="stat"><div class="stat-value">9</div><div class="stat-label">Custom CRDs</div></div>
+    <div class="stat"><div class="stat-value">10</div><div class="stat-label">Custom CRDs</div></div>
     <div class="stat"><div class="stat-value">9</div><div class="stat-label">LLM Providers</div></div>
     <div class="stat"><div class="stat-value">37</div><div class="stat-label">Agent Tools</div></div>
   </div>
@@ -237,14 +237,15 @@ code{font-family:'JetBrains Mono',Consolas,'Courier New',monospace;font-size:0.8
   <h2>Observability and Investigation</h2>
   <p class="secondary">The read-only part of the platform. Nothing is changed, nothing is executed. The goal is to produce a root cause analysis with a confidence score.</p>
   <h3>Signal intake and classification</h3>
-  <p class="secondary">When Prometheus AlertManager fires an alert, it sends a webhook POST to the Gateway service. The Gateway resolves the alert's target resource to its owner (e.g., Pod to Deployment via ownerReferences), computes a SHA256 fingerprint of <code>namespace:kind:name</code>, and checks whether an active RemediationRequest already exists for that fingerprint. Duplicates are counted but not re-processed. New signals become <code>RemediationRequest</code> CRDs.</p>
+  <p class="secondary">When Prometheus AlertManager fires an alert, it sends a webhook POST to the Gateway service. The Gateway resolves the alert's target resource to its owner (e.g., Pod to Deployment via ownerReferences) and computes a SHA256 fingerprint of <code>namespace:kind:name</code>. The fingerprint does not include the signal type -- because the signal is just an indicator that something is wrong; the agent will determine the actual root cause during investigation. This means multiple different alerts for the same Deployment in the same namespace produce one investigation, not one per alert type.</p>
+  <p class="secondary">Deduplication happens at two levels: at <strong>signal intake</strong> (Gateway and A2A) the fingerprint prevents duplicate RemediationRequests for the same resource, even if multiple pod replicas fire the same alert. At <strong>workflow execution</strong>, if two different signals independently determine the same RCA target and select the same workflow, only one execution runs -- preventing the resource from being accidentally remediated twice for the same issue.</p>
   <p class="secondary">The SignalProcessing controller then enriches the signal with namespace-level context and evaluates four OPA Rego prepared queries to classify the signal's environment, severity, priority, and custom labels. Infrastructure label detection (is this GitOps-managed? Does it have an HPA? Is there a PDB?) happens later, after the AI agent determines the RCA target resource -- those labels influence workflow selection, not signal classification.</p>
   <h3>AI-powered root cause analysis</h3>
   <p class="secondary">The KubernautAgent receives the enriched signal and runs a structured investigation using an LLM (any of 9 supported providers) with access to 37 read-only tools implemented as typed Go functions via client-go. These tools include: resource get/list/describe for any API group, pod log retrieval, Prometheus instant and range queries, metrics API queries, K8s event lookups, and resource context lookups (owner chain + remediation history).</p>
   <p class="secondary">The agent calls these tools in a loop -- up to 40 turns -- following leads the way an SRE would: check pod status, read logs, look at events, query Prometheus, trace ownership, check related resources. When it has enough evidence, it submits a structured JSON result containing a root cause summary, causal chain, confidence score, and an 8-dimension due diligence assessment.</p>
   <p class="secondary"><strong>Every tool is read-only.</strong> The agent cannot create, patch, delete, or exec into any Kubernetes resource. It can only observe and analyze. This is an architectural constraint enforced in code, not a policy setting.</p>
   <div class="row gap-10" style="align-items:stretch;margin-top:4px">
-    <div class="flow-step accent"><div class="step-num">INTAKE</div><div class="step-title">Gateway + Signal Processing</div><div class="step-detail">AlertManager webhook. Owner resolution. SHA256 fingerprint dedup. OPA Rego classification (env, severity, priority, labels).</div></div>
+    <div class="flow-step accent"><div class="step-num">INTAKE</div><div class="step-title">Gateway + Signal Processing</div><div class="step-detail">AlertManager webhook. Owner resolution. Two-level dedup (signal intake + workflow execution). OPA Rego classification (env, severity, priority, labels).</div></div>
     <div class="flow-step accent"><div class="step-num">INVESTIGATE</div><div class="step-title">KubernautAgent (RCA)</div><div class="step-detail">Agent calls 37 read-only tools in a loop: kubectl get, prometheus query, fetch logs, check events, trace owners. Up to 40 turns. Produces structured RCA with confidence score.</div></div>
   </div>
 </div>
@@ -348,10 +349,10 @@ code{font-family:'JetBrains Mono',Consolas,'Courier New',monospace;font-size:0.8
     <tr class="striped"><td><span class="semibold">Investigation</span></td><td>Agent reads cluster ad-hoc</td><td>Agent reads cluster ad-hoc (same -- this part IS agentic)</td></tr>
     <tr class="striped"><td><span class="semibold">Fix generation</span></td><td>Agent generates patches/commands</td><td>Agent selects from pre-approved workflow catalog</td></tr>
     <tr class="striped"><td><span class="semibold">Execution</span></td><td>Agent applies fixes directly</td><td>Separate controller applies fixes with dedicated ServiceAccount</td></tr>
-    <tr class="striped"><td><span class="semibold">Governance</span></td><td>Trust levels (binary or tiered)</td><td>OPA Rego policies + approval CRD + shadow agent</td></tr>
+    <tr class="striped"><td><span class="semibold">Governance</span></td><td>Trust levels (binary or tiered)</td><td>OPA Rego policies + approval CRD + shadow agent + dry-run mode (no workflows execute, you still get notified)</td></tr>
     <tr class="striped"><td><span class="semibold">Blast radius</span></td><td>Agent's permissions = blast radius</td><td>Workflow's ServiceAccount = blast radius (scoped per workflow)</td></tr>
     <tr class="striped"><td><span class="semibold">Auditability</span></td><td>Varies (logs, DB)</td><td>Every step is a K8s CRD (kubectl observable) + PostgreSQL audit trail</td></tr>
-    <tr class="striped"><td><span class="semibold">Failure mode</span></td><td>Agent makes wrong patch, hard to undo</td><td>Wrong workflow selected, but workflow is pre-tested and rollback-capable</td></tr>
+    <tr class="striped"><td><span class="semibold">Failure mode</span></td><td>Agent makes wrong patch, hard to undo</td><td>Wrong workflow selected (e.g., restart instead of rollback). Next time the alert fires, the agent sees the previous attempt scored 0 and is nudged toward a different workflow. Approval gates with OPA/Rego prevent destructive actions.</td></tr>
     <tr class="striped"><td><span class="semibold">Adoption path</span></td><td>"Turn it on and hope"</td><td>Progressive trust ladder (observe / approve / selective / full)</td></tr>
   </table>
 
