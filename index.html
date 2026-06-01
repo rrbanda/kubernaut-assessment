@@ -135,7 +135,7 @@ details .details-body{padding:12px 14px}
   <div class="section-label">Solution Architecture</div>
   <h2>How Kubernaut is built</h2>
 
-  <p class="secondary">Kubernaut is a CRD-native microservices platform written in Go. It consists of 11 independently deployed services, each responsible for one stage of the remediation lifecycle. Services do not call each other directly. Instead, each service watches a Kubernetes Custom Resource (CRD), performs its work, and writes results back to the CRD status. A central controller called the RemediationOrchestrator reads those statuses and advances the pipeline by creating the next CRD in the chain.</p>
+  <p class="secondary">Kubernaut is a CRD-native microservices platform written in Go. It consists of 11 independently deployed services, each responsible for one stage of the remediation lifecycle. Services communicate primarily through Kubernetes CRD status transitions, not direct service-to-service calls. Each controller watches a CRD, performs its work, and writes results back to the CRD status. The two exceptions are the KubernautAgent (called via HTTP by AIAnalysis for LLM investigation) and DataStorage (called via HTTP by services that need persistence, audit, or catalog queries). A central controller called the RemediationOrchestrator reads those statuses and advances the pipeline by creating the next CRD in the chain.</p>
   <p class="secondary">This design means all state lives in etcd. Every decision the platform makes is observable via <code>kubectl get remediationrequests</code>. If any service crashes, the controller-runtime reconciliation loop automatically restarts from the last persisted state. There is no in-memory state to lose.</p>
 
   <!-- Diagram -->
@@ -192,7 +192,7 @@ details .details-body{padding:12px 14px}
     <tr class="striped"><td><span class="semibold">Gateway</span></td><td>Alert ingestion, fingerprint dedup, creates RemediationRequest CRD</td><td>AlertManager v4 webhook, SHA256, K8s Lease lock</td></tr>
     <tr class="striped"><td><span class="semibold">SignalProcessing</span></td><td>Enriches signals with K8s context, classifies via policy</td><td>OPA Rego (4 prepared queries), owner chain traversal</td></tr>
     <tr class="striped"><td><span class="semibold">AIAnalysis</span></td><td>Triggers LLM investigation, evaluates approval policy</td><td>Separate approval.rego, HTTP to KubernautAgent</td></tr>
-    <tr class="striped row-info"><td><span class="semibold">KubernautAgent</span></td><td>LLM-powered root cause analysis + workflow selection</td><td>Two-phase agent loop, 36 read-only tools, 10 LLM providers</td></tr>
+    <tr class="striped row-info"><td><span class="semibold">KubernautAgent</span></td><td>LLM-powered root cause analysis + workflow selection</td><td>Two-phase agent loop, 37 read-only tools, 9 LLM providers</td></tr>
     <tr class="striped"><td><span class="semibold">RemediationOrchestrator</span></td><td>Pipeline state machine -- drives all phase transitions</td><td>12 phases, timeouts, routing, backoff, distributed locking</td></tr>
     <tr class="striped"><td><span class="semibold">WorkflowExecution</span></td><td>Runs the actual remediation</td><td>Tekton PipelineRun, K8s Job, Ansible/AWX</td></tr>
     <tr class="striped"><td><span class="semibold">EffectivenessMonitor</span></td><td>Verifies the fix worked</td><td>Health, alert resolution, metrics, spec hash drift</td></tr>
@@ -220,8 +220,8 @@ details .details-body{padding:12px 14px}
   <div class="grid-4" style="margin-top:8px">
     <div class="stat"><div class="stat-value">11</div><div class="stat-label">Microservices</div></div>
     <div class="stat"><div class="stat-value">9</div><div class="stat-label">Custom CRDs</div></div>
-    <div class="stat"><div class="stat-value">10</div><div class="stat-label">LLM Providers</div></div>
-    <div class="stat"><div class="stat-value">36</div><div class="stat-label">Agent Tools</div></div>
+    <div class="stat"><div class="stat-value">9</div><div class="stat-label">LLM Providers</div></div>
+    <div class="stat"><div class="stat-value">37</div><div class="stat-label">Agent Tools</div></div>
   </div>
 
   <div class="callout neutral">
@@ -245,13 +245,13 @@ details .details-body{padding:12px 14px}
   <p class="secondary">The SignalProcessing controller then enriches the signal. It walks the ownerReference chain to find the root owner, detects infrastructure labels (is this GitOps-managed? Does it have an HPA? Is there a PDB?), and evaluates four OPA Rego prepared queries to classify the signal's environment, severity, priority, and custom labels. The result is a fully contextualized signal that the AI agent can work with.</p>
 
   <h3>AI-powered root cause analysis</h3>
-  <p class="secondary">The KubernautAgent receives the enriched signal and runs a structured investigation. It uses an LLM (any of 10 supported providers: OpenAI, Anthropic, Vertex AI, Bedrock, Azure, Ollama, etc.) that has access to 36 read-only tools implemented as typed Go functions via client-go. These tools include: resource get/list/describe for any API group, pod log retrieval, Prometheus instant and range queries, metrics API queries, K8s event lookups, and resource context lookups (owner chain + remediation history).</p>
+  <p class="secondary">The KubernautAgent receives the enriched signal and runs a structured investigation. It uses an LLM (any of 10 supported providers: OpenAI, Anthropic, Vertex AI, Bedrock, Azure, Ollama, etc.) that has access to 37 read-only tools implemented as typed Go functions via client-go. These tools include: resource get/list/describe for any API group, pod log retrieval, Prometheus instant and range queries, metrics API queries, K8s event lookups, and resource context lookups (owner chain + remediation history).</p>
   <p class="secondary">The LLM calls these tools in a loop -- up to 40 turns -- following leads the way an SRE would: check pod status, read logs, look at events, query Prometheus, trace ownership, check related resources. When it has enough evidence, it submits a structured JSON result containing a root cause summary, causal chain, confidence score, and an 8-dimension due diligence assessment.</p>
   <p class="secondary"><strong>Every tool is read-only.</strong> The agent cannot create, patch, delete, or exec into any Kubernetes resource. It can only observe and analyze. This is an architectural constraint enforced in code, not a policy setting.</p>
 
   <div class="row gap-10" style="align-items:stretch;margin-top:4px">
     <div class="flow-step accent"><div class="step-num">INTAKE</div><div class="step-title">Gateway + Signal Processing</div><div class="step-detail">AlertManager webhook. Owner resolution. SHA256 fingerprint dedup. OPA Rego classification (env, severity, priority, labels).</div></div>
-    <div class="flow-step accent"><div class="step-num">INVESTIGATE</div><div class="step-title">KubernautAgent (RCA)</div><div class="step-detail">LLM calls 36 read-only tools in a loop: kubectl get, prometheus query, fetch logs, check events, trace owners. Up to 40 turns. Produces structured RCA with confidence score.</div></div>
+    <div class="flow-step accent"><div class="step-num">INVESTIGATE</div><div class="step-title">KubernautAgent (RCA)</div><div class="step-detail">LLM calls 37 read-only tools in a loop: kubectl get, prometheus query, fetch logs, check events, trace owners. Up to 40 turns. Produces structured RCA with confidence score.</div></div>
   </div>
 </div>
 
@@ -332,7 +332,7 @@ details .details-body{padding:12px 14px}
   <table>
     <tr><th>Layer</th><th>What it covers</th><th>Who else does this</th><th>Kubernaut</th></tr>
     <tr class="striped"><td>1. Signal Intake</td><td>AlertManager webhooks, K8s Events, dedup</td><td>Every monitoring platform</td><td>SHA256 fingerprint, Lease dedup</td></tr>
-    <tr class="striped"><td>2. Investigation</td><td>AI-powered root cause analysis</td><td>K8sGPT, HolmesGPT, Robusta, Komodor</td><td>36 client-go tools, two-phase agent</td></tr>
+    <tr class="striped"><td>2. Investigation</td><td>AI-powered root cause analysis</td><td>K8sGPT, HolmesGPT, Robusta, Komodor</td><td>37 client-go tools, two-phase agent</td></tr>
     <tr class="striped row-info"><td>3. Governed Execution</td><td>Policy-gated, catalog-driven workflow runs</td><td>Few solutions; no pre-approved catalog</td><td>Tekton + Jobs + AWX, OPA gates</td></tr>
     <tr class="striped row-success"><td>4. Closing the Loop</td><td>Effectiveness scoring, structured feedback</td><td>No competitor covers this fully</td><td>4-dimension scoring, history feedback</td></tr>
   </table>
@@ -416,15 +416,15 @@ details .details-body{padding:12px 14px}
     <div class="card">
       <div class="card-header">What the code actually does <span class="pill success active" style="font-size:10px">Verified</span></div>
       <div class="card-body stack gap-5">
-        <p class="small">36 read-only K8s/Prometheus/log tools via native client-go</p>
+        <p class="small">37 read-only K8s/Prometheus/log tools via native client-go</p>
         <p class="small">Two-phase LLM investigation (RCA + workflow selection)</p>
         <p class="small">OPA prepared-query evaluation (compiled at load, not per-call)</p>
         <p class="small">Tekton PipelineRun + K8s Job execution (envtest-exercised)</p>
         <p class="small">Real MCP go-sdk server with K8s Lease session management</p>
         <p class="small">Shadow agent: real second LLM call per investigation step</p>
-        <p class="small">Sanitization: 50+ credential regexes, 14 injection patterns</p>
+        <p class="small">Sanitization: 28 credential regexes, 14 injection patterns</p>
         <p class="small">1,437 test files (1.7:1 test-to-source ratio)</p>
-        <p class="small">10 LLM providers wired (OpenAI, Anthropic, Vertex, Bedrock, etc.)</p>
+        <p class="small">9 LLM providers wired (OpenAI, Anthropic, Vertex AI, Bedrock, Azure, Ollama, HuggingFace, Mistral, Google Vertex)</p>
       </div>
     </div>
     <div class="card">
