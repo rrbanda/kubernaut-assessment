@@ -14,7 +14,7 @@
   --accent:#4facfe;--accent-dim:rgba(79,172,254,0.12);
   --danger:#f85149;--warning:#d29922;--success:#3fb950;--info:#58a6ff;
 }
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,sans-serif;background:var(--bg);color:var(--text-primary);line-height:1.5;font-size:14px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,sans-serif;background:var(--bg);color:var(--text-primary);line-height:1.6;font-size:14px}
 .page{max-width:900px;margin:0 auto;padding:40px 24px 60px}
 h1{font-size:24px;font-weight:700;margin-bottom:4px}
 h2{font-size:18px;font-weight:600;margin-bottom:6px}
@@ -54,13 +54,17 @@ hr{border:none;border-top:1px solid var(--stroke-secondary);margin:0}
 .card-body{padding:12px}
 .callout{border:1px solid var(--stroke-secondary);border-radius:8px;padding:12px 14px;background:var(--fill-tertiary)}
 .callout.info{border-color:rgba(88,166,255,0.3);background:rgba(88,166,255,0.06)}
+.callout.success{border-color:rgba(63,185,80,0.3);background:rgba(63,185,80,0.06)}
 .callout.neutral{border-color:var(--stroke-secondary)}
 .callout .callout-title{font-weight:600;margin-bottom:4px;font-size:13px}
 .callout.info .callout-title{color:var(--info)}
+.callout.success .callout-title{color:var(--success)}
 .flow-step{flex:1;min-width:140px;padding:12px 14px;border-radius:8px;background:var(--fill-tertiary);border-left:3px solid var(--stroke-secondary)}
 .flow-step.accent{background:var(--accent-dim);border-left-color:var(--accent)}
+.flow-step.green{background:rgba(63,185,80,0.06);border-left-color:var(--success)}
 .flow-step .step-num{font-size:11px;font-weight:700;color:var(--text-secondary)}
 .flow-step.accent .step-num{color:var(--accent)}
+.flow-step.green .step-num{color:var(--success)}
 .flow-step .step-title{font-weight:600;margin-top:2px}
 .flow-step .step-detail{font-size:12px;color:var(--text-secondary);margin-top:4px}
 .trust-step{flex:1;padding:14px 16px;border-radius:8px;background:var(--fill-tertiary);border-top:3px solid var(--stroke-tertiary)}
@@ -86,11 +90,13 @@ details .details-body{padding:12px 14px}
 <body>
 <div class="page stack gap-28">
 
+<!-- ============================================================ -->
 <!-- TITLE -->
+<!-- ============================================================ -->
 <div class="stack gap-6">
-  <div class="section-label">KUBERNAUT TECHNICAL ASSESSMENT -- PRESENTATION BRIEF</div>
-  <h1>Kubernaut: Autonomous K8s Remediation</h1>
-  <p class="secondary" style="max-width:700px">From alert to verified fix in minutes. An LLM agent investigates live cluster state, selects a fix from a curated workflow catalog, executes it via Tekton/Jobs/Ansible, and verifies the outcome -- all governed by OPA policies and approval gates.</p>
+  <div class="section-label">KUBERNAUT -- CODE-VERIFIED TECHNICAL ASSESSMENT</div>
+  <h1>Kubernaut: Autonomous Kubernetes Remediation</h1>
+  <p class="secondary" style="max-width:700px">An open-source AIOps platform that closes the loop from Kubernetes alert to verified fix. An AI agent investigates live cluster state, selects a remediation from a curated workflow catalog, executes it via Tekton/Jobs/Ansible, and verifies the outcome -- all governed by OPA policies and approval gates.</p>
   <div class="row gap-8" style="margin-top:4px">
     <span class="pill info active">Apache 2.0</span>
     <span class="pill">Go 1.25</span>
@@ -102,11 +108,14 @@ details .details-body{padding:12px 14px}
 
 <hr>
 
-<!-- MINUTE 1: THE PROBLEM -->
+<!-- ============================================================ -->
+<!-- THE PROBLEM -->
+<!-- ============================================================ -->
 <div class="stack gap-10">
-  <div class="section-label">Minute 1 -- The Problem</div>
+  <div class="section-label">The Problem</div>
   <h2>When a pod crashes at 3 AM</h2>
-  <p class="secondary">Detection and correlation are solved. Alert fires in seconds, SRE is paged in under a minute. The problem starts after: RCA, fix selection, execution, and verification are still manual. That's 60+ minutes of human toil per incident.</p>
+  <p class="secondary">Detection and correlation are solved. Prometheus fires an alert in seconds. PagerDuty pages an SRE in under a minute. The problem starts after that: root cause analysis, fix selection, execution, and verification are still manual. That is 60+ minutes of human toil per incident, and it depends entirely on who is on call and what they know.</p>
+  <p class="secondary">Scale makes it worse. More clusters, more microservices, more alerts, same team. Alert fatigue sets in. Incidents get missed. MTTR keeps climbing.</p>
   <div class="grid-4">
     <div class="stat danger"><div class="stat-value">82%</div><div class="stat-label">Orgs with MTTR &gt;1 hour</div></div>
     <div class="stat danger"><div class="stat-value">73%</div><div class="stat-label">Outages from ignored alerts</div></div>
@@ -114,43 +123,24 @@ details .details-body{padding:12px 14px}
     <div class="stat danger"><div class="stat-value">~$2M/hr</div><div class="stat-label">Cost of high-impact outages</div></div>
   </div>
   <p class="small quaternary">Sources: Logz.io 2024 (n=500+), Splunk 2025 (n=1,855), Catchpoint SRE 2025 (n=301), New Relic 2025 (n=1,700)</p>
-  <div class="callout neutral">
-    <div class="callout-title">The gap Kubernaut fills</div>
-    <p class="small secondary">We've automated detection. Why is remediation still manual? Kubernaut automates the 4 manual steps: RCA, fix selection, execution, and verification. End-to-end.</p>
-  </div>
+  <p class="secondary">Kubernaut automates the four manual steps that come after detection: root cause analysis, fix selection, execution, and verification. End-to-end, from alert to verified fix.</p>
 </div>
 
 <hr>
 
-<!-- ARCHITECTURE -->
+<!-- ============================================================ -->
+<!-- SOLUTION ARCHITECTURE -->
+<!-- ============================================================ -->
 <div class="stack gap-10">
   <div class="section-label">Solution Architecture</div>
-  <h2>How Kubernaut works, end to end</h2>
+  <h2>How Kubernaut is built</h2>
 
-  <h3>The big picture</h3>
-  <p class="secondary">Kubernaut is a CRD-native microservices platform written in Go. It consists of 11 independently deployed services, each responsible for one stage of the remediation lifecycle. Services do not call each other directly -- instead, each service watches a Kubernetes Custom Resource (CRD), performs its work, and writes results back to the CRD status. A central controller called the RemediationOrchestrator reads those statuses and advances the pipeline by creating the next CRD. This means all state lives in etcd, every decision is visible via <code>kubectl get</code>, and if any service crashes, the controller-runtime reconciliation loop automatically restarts from the last persisted state.</p>
+  <p class="secondary">Kubernaut is a CRD-native microservices platform written in Go. It consists of 11 independently deployed services, each responsible for one stage of the remediation lifecycle. Services do not call each other directly. Instead, each service watches a Kubernetes Custom Resource (CRD), performs its work, and writes results back to the CRD status. A central controller called the RemediationOrchestrator reads those statuses and advances the pipeline by creating the next CRD in the chain.</p>
+  <p class="secondary">This design means all state lives in etcd. Every decision the platform makes is observable via <code>kubectl get remediationrequests</code>. If any service crashes, the controller-runtime reconciliation loop automatically restarts from the last persisted state. There is no in-memory state to lose.</p>
 
-  <h3>What happens when an alert fires</h3>
-  <p class="secondary">When Prometheus AlertManager fires an alert, it sends a webhook POST to the Gateway service. The Gateway resolves the alert's target resource to its owner (e.g., Pod to Deployment via ownerReferences), computes a SHA256 fingerprint of <code>namespace:kind:name</code>, and checks whether an active RemediationRequest already exists for that fingerprint. If it's a duplicate, it patches the existing RR's dedup counter and returns HTTP 202. If it's new, it creates a <code>RemediationRequest</code> CRD in the controller namespace.</p>
-  <p class="secondary">The RemediationOrchestrator (RO) picks up the new RR and starts the pipeline. First, it creates a <code>SignalProcessing</code> CRD. The SignalProcessing controller enriches the signal with Kubernetes context -- it walks the ownerReference chain to find the root owner, detects infrastructure labels (GitOps, Helm, HPA, PDB, mesh), and evaluates four OPA Rego prepared queries to classify environment, severity, priority, and custom labels. When SP completes, RO creates an <code>AIAnalysis</code> CRD.</p>
-
-  <h3>How the AI agent investigates</h3>
-  <p class="secondary">The AIAnalysis controller sends an HTTP request to the KubernautAgent (KA) service. KA runs two separate LLM sessions for each incident -- not one continuous conversation. In the first session (RCA), the LLM is given the alert details and access to 36 read-only tools: kubectl-style resource gets/lists/describes via the dynamic client-go API, Prometheus instant and range queries, pod log retrieval, metrics API queries, and resource context lookups. The LLM calls these tools in a loop (up to 40 turns) until it determines the root cause, then submits a structured JSON result containing a causal chain, confidence score, and due diligence assessment.</p>
-  <p class="secondary">In the second session (Workflow Selection), the LLM receives the RCA findings plus enrichment data (owner chain, remediation history, detected labels) and searches the workflow catalog stored in DataStorage. It proposes a workflow ID, which is validated against the catalog's JSON schema. If the proposal is invalid, the system retries with correction context up to 3 times. If no valid workflow is found, the incident is escalated to a human.</p>
-  <p class="secondary">A critical architectural decision: <strong>the LLM's tools are entirely read-only</strong>. The agent cannot create, patch, delete, or exec into any Kubernetes resource. It only investigates and recommends. The actual cluster mutation happens later through a completely separate execution path.</p>
-
-  <h3>Approval, execution, and verification</h3>
-  <p class="secondary">After AI analysis, the AIAnalysis controller evaluates a separate <code>approval.rego</code> OPA policy. If the policy requires human approval (based on confidence threshold, severity, environment), RO creates a <code>RemediationApprovalRequest</code> CRD and the pipeline pauses in <code>AwaitingApproval</code> until a human approves or rejects via Slack, the Console UI, or direct CRD status update.</p>
-  <p class="secondary">Once approved (or auto-approved), RO creates a <code>WorkflowExecution</code> CRD. The WorkflowExecution controller looks up the workflow definition from the catalog and runs it through one of three execution engines: a Tekton PipelineRun (with OCI bundle resolver), a Kubernetes batch/v1 Job, or an Ansible job template via the AWX/AAP REST API. Each workflow runs with its own dedicated ServiceAccount and short-lived TokenRequest credentials -- the LLM never has the permissions to run the fix itself.</p>
-  <p class="secondary">After execution completes, RO creates an <code>EffectivenessAssessment</code> CRD. The EffectivenessMonitor checks four dimensions: pod health, whether the original alert has resolved, Prometheus metric stability, and whether the resource spec hash has drifted (indicating something else changed). It produces a health score from 0-100% and writes the result back. If the fix failed (score 0), the outcome is recorded in DataStorage's remediation history, and next time the same type of alert fires, the LLM will see "previous workflow scored 0 -- regression detected" in its enrichment context and avoid repeating the failed approach.</p>
-  <p class="secondary">Throughout the entire pipeline, every LLM call, tool invocation, decision, and outcome is recorded as a typed audit event in a PostgreSQL table with hash-chain integrity, providing a full compliance-grade trail of every automated action.</p>
-
-  <h3>Architecture at a glance</h3>
-
-  <!-- Architecture Diagram -->
+  <!-- Diagram -->
   <div style="border:1px solid var(--stroke-primary);border-radius:8px;padding:20px;background:var(--fill-tertiary);overflow-x:auto">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;min-width:700px">
-      <!-- Sources -->
       <div style="text-align:center;padding:8px 12px;border:1px solid var(--stroke-secondary);border-radius:6px;min-width:100px">
         <div class="small semibold">AlertManager</div>
         <div class="small quaternary">webhook</div>
@@ -160,48 +150,42 @@ details .details-body{padding:12px 14px}
         <div class="small quaternary">watch</div>
       </div>
       <div style="color:var(--text-tertiary);font-size:18px">&rarr;</div>
-      <!-- Gateway -->
       <div style="text-align:center;padding:8px 14px;border:2px solid var(--accent);border-radius:6px;background:var(--accent-dim)">
         <div class="small semibold" style="color:var(--accent)">Gateway</div>
         <div class="small quaternary">dedup + create RR</div>
       </div>
       <div style="color:var(--text-tertiary);font-size:18px">&rarr;</div>
-      <!-- SP -->
       <div style="text-align:center;padding:8px 14px;border:1px solid var(--stroke-primary);border-radius:6px">
         <div class="small semibold">Signal Processing</div>
         <div class="small quaternary">OPA classify</div>
       </div>
       <div style="color:var(--text-tertiary);font-size:18px">&rarr;</div>
-      <!-- KA -->
       <div style="text-align:center;padding:8px 14px;border:2px solid var(--accent);border-radius:6px;background:var(--accent-dim)">
         <div class="small semibold" style="color:var(--accent)">Kubernaut Agent</div>
         <div class="small quaternary">LLM investigation</div>
       </div>
       <div style="color:var(--text-tertiary);font-size:18px">&rarr;</div>
-      <!-- Approval -->
       <div style="text-align:center;padding:8px 14px;border:1px solid var(--danger);border-radius:6px">
         <div class="small semibold" style="color:var(--danger)">Approval</div>
         <div class="small quaternary">OPA / human</div>
       </div>
       <div style="color:var(--text-tertiary);font-size:18px">&rarr;</div>
-      <!-- WFE -->
       <div style="text-align:center;padding:8px 14px;border:1px solid var(--stroke-primary);border-radius:6px">
         <div class="small semibold">Workflow Exec</div>
         <div class="small quaternary">Tekton/Job/AWX</div>
       </div>
       <div style="color:var(--text-tertiary);font-size:18px">&rarr;</div>
-      <!-- EM -->
       <div style="text-align:center;padding:8px 14px;border:1px solid var(--success);border-radius:6px">
         <div class="small semibold" style="color:var(--success)">Verify</div>
         <div class="small quaternary">effectiveness</div>
       </div>
     </div>
     <div style="text-align:center;margin-top:10px">
-      <span class="small quaternary">RemediationRequest CRD orchestrates the entire flow &bull; Each box is a separate microservice &bull; RO controller drives phase transitions</span>
+      <span class="small quaternary">Each box is a separate microservice. RemediationRequest CRD orchestrates the flow. RO controller drives phase transitions.</span>
     </div>
   </div>
 
-  <!-- Services Table -->
+  <!-- Services -->
   <h3>The 11 services</h3>
   <table>
     <tr><th>Service</th><th>Role</th><th>Key technology</th></tr>
@@ -220,7 +204,7 @@ details .details-body{padding:12px 14px}
 
   <!-- CRDs -->
   <h3>The 9 CRDs</h3>
-  <p class="secondary small">Every step in the pipeline is a Kubernetes custom resource. Each controller watches its CRD, does its work, and updates status. The RemediationOrchestrator reads those statuses and advances the pipeline. Crash recovery is free -- controller-runtime reconciliation restarts from the last persisted state.</p>
+  <p class="secondary small">Every step in the pipeline is a Kubernetes custom resource under the <code>kubernaut.ai</code> API group. Each controller watches its CRD, does its work, and updates status. The RemediationOrchestrator reads those statuses and advances the pipeline. Crash recovery is built-in -- controller-runtime reconciliation restarts from the last persisted state.</p>
   <div class="row gap-8" style="flex-wrap:wrap;margin-top:4px">
     <span class="pill info active">RemediationRequest</span>
     <span class="pill">SignalProcessing</span>
@@ -233,7 +217,6 @@ details .details-body{padding:12px 14px}
     <span class="pill">ActionType</span>
   </div>
 
-  <!-- Platform stats -->
   <div class="grid-4" style="margin-top:8px">
     <div class="stat"><div class="stat-value">11</div><div class="stat-label">Microservices</div></div>
     <div class="stat"><div class="stat-value">9</div><div class="stat-label">Custom CRDs</div></div>
@@ -241,7 +224,6 @@ details .details-body{padding:12px 14px}
     <div class="stat"><div class="stat-value">36</div><div class="stat-label">Agent Tools</div></div>
   </div>
 
-  <!-- Operator -->
   <div class="callout neutral">
     <div class="callout-title">Deployment: OLM Operator</div>
     <p class="small secondary">The kubernaut-operator deploys and manages the entire platform via a single <code>Kubernaut</code> CR. One CR = all 11 services + RBAC + webhooks + monitoring + OCP Routes + DB migrations. OLM bundle with 14 digest-pinned images for disconnected/airgap registries. BYO PostgreSQL + Valkey. OpenShift 4.18+.</p>
@@ -250,61 +232,114 @@ details .details-body{padding:12px 14px}
 
 <hr>
 
-<!-- PIPELINE QUICK REFERENCE -->
+<!-- ============================================================ -->
+<!-- CAPABILITY 1: OBSERVABILITY & INVESTIGATION -->
+<!-- ============================================================ -->
 <div class="stack gap-10">
-  <div class="section-label">Pipeline Quick Reference</div>
-  <h2>The 5 phases at a glance</h2>
+  <div class="section-label">Capability 1</div>
+  <h2>Observability and Investigation</h2>
+  <p class="secondary">The first thing Kubernaut does is observe and understand what is happening in your cluster. This is the read-only part of the platform. Nothing is changed, nothing is executed. The goal is to produce a root cause analysis with a confidence score.</p>
 
-  <div class="callout neutral">
-    <div class="callout-title">The simple version (for non-AI folks)</div>
-    <p class="small secondary">Imagine a very diligent SRE who can only read your cluster, never write. They run kubectl get, check logs, query Prometheus, follow owner references -- in a loop -- until they find the root cause. Then they look through your approved runbook catalog, pick the right fix, and hand it to a separate system that actually applies it. That is what the AI agent does, except it's software calling typed Go functions against the K8s API. The "separate system" is Tekton, a K8s Job, or Ansible.</p>
-  </div>
+  <h3>Signal intake and classification</h3>
+  <p class="secondary">When Prometheus AlertManager fires an alert, it sends a webhook POST to the Gateway service. The Gateway resolves the alert's target resource to its owner (e.g., Pod to Deployment via ownerReferences), computes a SHA256 fingerprint of <code>namespace:kind:name</code>, and checks whether an active RemediationRequest already exists for that fingerprint. Duplicates are counted but not re-processed. New signals become <code>RemediationRequest</code> CRDs.</p>
+  <p class="secondary">The SignalProcessing controller then enriches the signal. It walks the ownerReference chain to find the root owner, detects infrastructure labels (is this GitOps-managed? Does it have an HPA? Is there a PDB?), and evaluates four OPA Rego prepared queries to classify the signal's environment, severity, priority, and custom labels. The result is a fully contextualized signal that the AI agent can work with.</p>
 
-  <div class="row gap-10" style="align-items:stretch">
-    <div class="flow-step"><div class="step-num">1 <span class="pill" style="font-size:10px">seconds</span></div><div class="step-title">Signal Processing</div><div class="step-detail">AlertManager webhook arrives. Gateway deduplicates by SHA256 fingerprint. OPA/Rego classifies severity, priority, and environment.</div></div>
-    <div class="flow-step accent"><div class="step-num">2 <span class="pill" style="font-size:10px">2-5 min</span></div><div class="step-title">AI Investigation</div><div class="step-detail">Two separate LLM sessions: first investigates root cause with 36 read-only tools, then searches the workflow catalog and picks a fix. Up to 40 tool-calling turns per session.</div></div>
-    <div class="flow-step"><div class="step-num">3 <span class="pill" style="font-size:10px">auto or human</span></div><div class="step-title">Approval Gate</div><div class="step-detail">Separate OPA/Rego policy evaluates the proposed remediation. Auto-approve if low-risk, or create a RemediationApprovalRequest CRD for human review.</div></div>
-    <div class="flow-step"><div class="step-num">4 <span class="pill" style="font-size:10px">varies</span></div><div class="step-title">Execution</div><div class="step-detail">WorkflowExecution controller runs the fix via Tekton PipelineRun, K8s Job, or AWX job template. Dedicated per-workflow ServiceAccount with short-lived tokens.</div></div>
-    <div class="flow-step"><div class="step-num">5 <span class="pill" style="font-size:10px">5 min</span></div><div class="step-title">Effectiveness</div><div class="step-detail">EffectivenessMonitor checks 4 dimensions: pod health, alert resolution, metric stability, spec hash drift. Score (0-100%) feeds future remediation context.</div></div>
+  <h3>AI-powered root cause analysis</h3>
+  <p class="secondary">The KubernautAgent receives the enriched signal and runs a structured investigation. It uses an LLM (any of 10 supported providers: OpenAI, Anthropic, Vertex AI, Bedrock, Azure, Ollama, etc.) that has access to 36 read-only tools implemented as typed Go functions via client-go. These tools include: resource get/list/describe for any API group, pod log retrieval, Prometheus instant and range queries, metrics API queries, K8s event lookups, and resource context lookups (owner chain + remediation history).</p>
+  <p class="secondary">The LLM calls these tools in a loop -- up to 40 turns -- following leads the way an SRE would: check pod status, read logs, look at events, query Prometheus, trace ownership, check related resources. When it has enough evidence, it submits a structured JSON result containing a root cause summary, causal chain, confidence score, and an 8-dimension due diligence assessment.</p>
+  <p class="secondary"><strong>Every tool is read-only.</strong> The agent cannot create, patch, delete, or exec into any Kubernetes resource. It can only observe and analyze. This is an architectural constraint enforced in code, not a policy setting.</p>
+
+  <div class="row gap-10" style="align-items:stretch;margin-top:4px">
+    <div class="flow-step accent"><div class="step-num">INTAKE</div><div class="step-title">Gateway + Signal Processing</div><div class="step-detail">AlertManager webhook. Owner resolution. SHA256 fingerprint dedup. OPA Rego classification (env, severity, priority, labels).</div></div>
+    <div class="flow-step accent"><div class="step-num">INVESTIGATE</div><div class="step-title">KubernautAgent (RCA)</div><div class="step-detail">LLM calls 36 read-only tools in a loop: kubectl get, prometheus query, fetch logs, check events, trace owners. Up to 40 turns. Produces structured RCA with confidence score.</div></div>
   </div>
 </div>
 
 <hr>
 
-<!-- MINUTE 3: TRUST LADDER -->
+<!-- ============================================================ -->
+<!-- CAPABILITY 2: REMEDIATION & VERIFICATION -->
+<!-- ============================================================ -->
 <div class="stack gap-10">
-  <div class="section-label">Minute 3 -- Building Trust</div>
-  <h2>Trust Ladder: observation to full autonomy</h2>
-  <p class="secondary">Teams don't flip a switch to full automation. Kubernaut has a progressive trust model -- start by watching, graduate to full autonomy when the data proves the platform is reliable.</p>
-  <div class="row gap-12" style="align-items:stretch">
-    <div class="trust-step active"><div class="row gap-6"><span class="level">L1</span><span class="pill info active" style="font-size:10px">v1.4</span></div><div class="semibold" style="margin-top:4px">Observe</div><p class="small secondary" style="margin-top:4px">Dry-run mode. See what Kubernaut would do without any execution. Full RCA notifications with context.</p></div>
-    <div class="trust-step"><div class="row gap-6"><span class="level">L2</span><span class="pill" style="font-size:10px">v1.3+</span></div><div class="semibold" style="margin-top:4px">Approve</div><p class="small secondary" style="margin-top:4px">Every remediation goes through an approval gate (RAR). OPA policy per context. Confidence scores visible.</p></div>
-    <div class="trust-step"><div class="row gap-6"><span class="level">L3</span><span class="pill" style="font-size:10px">v1.3+</span></div><div class="semibold" style="margin-top:4px">Selective Autonomy</div><p class="small secondary" style="margin-top:4px">Trusted workflows auto-approve. New ones require human review. Effectiveness scores drive graduation.</p></div>
-    <div class="trust-step"><div class="row gap-6"><span class="level">L4</span><span class="pill" style="font-size:10px">v1.3+</span></div><div class="semibold" style="margin-top:4px">Full Autonomy</div><p class="small secondary" style="margin-top:4px">All workflows execute without intervention. 4-dimension verification. Rego policy rollback to L3 at any time.</p></div>
+  <div class="section-label">Capability 2</div>
+  <h2>Remediation and Verification</h2>
+  <p class="secondary">The second thing Kubernaut does is fix the problem and prove the fix worked. This is the action part of the platform -- and it is completely separated from the investigation. The AI agent that investigated the root cause never directly touches the cluster. Instead, it recommends a workflow from a curated catalog, and a separate controller executes it with its own credentials.</p>
+
+  <h3>Workflow selection from a curated catalog</h3>
+  <p class="secondary">After the RCA is complete, the KubernautAgent runs a second LLM session (separate from the first). In this session, the LLM receives the RCA findings plus enrichment data (owner chain, remediation history from previous incidents, detected infrastructure labels) and searches the workflow catalog stored in DataStorage. It proposes a workflow ID, which is validated against the catalog's JSON schema. If the proposal is invalid, the system gives the LLM correction context and retries up to 3 times. If no valid workflow is found, the incident is escalated to a human with the full RCA.</p>
+  <p class="secondary">This is a critical design choice: the LLM does not generate arbitrary patches or kubectl commands. It selects from a pre-approved catalog of workflows that your team has authored, tested, and declared as <code>RemediationWorkflow</code> CRDs. The AI provides intelligence; the catalog provides control.</p>
+
+  <h3>Policy-gated approval</h3>
+  <p class="secondary">Before any workflow runs, a separate OPA Rego policy (<code>approval.rego</code>) evaluates whether the proposed remediation requires human approval. The policy can gate on confidence threshold, environment (always approve staging, always require approval in production), severity, or specific workflow types. If approval is required, the system creates a <code>RemediationApprovalRequest</code> CRD and pauses until a human approves via Slack, the Console UI, or a direct CRD status update. Operators can also override workflow parameters at approval time.</p>
+
+  <h3>Execution through dedicated controllers</h3>
+  <p class="secondary">Once approved (or auto-approved), the RemediationOrchestrator creates a <code>WorkflowExecution</code> CRD. The WorkflowExecution controller looks up the workflow definition from the catalog and runs it through one of three execution engines: a Tekton PipelineRun (resolved from an OCI bundle), a Kubernetes batch/v1 Job, or an Ansible job template dispatched to AWX/AAP via REST API. Each workflow runs with its own dedicated ServiceAccount and short-lived TokenRequest credentials. The LLM never has the permissions to apply the fix -- that responsibility belongs entirely to the workflow controller.</p>
+
+  <h3>Effectiveness verification</h3>
+  <p class="secondary">After execution completes, the RemediationOrchestrator creates an <code>EffectivenessAssessment</code> CRD. The EffectivenessMonitor checks four dimensions: pod health, whether the original alert has resolved in AlertManager, Prometheus metric stability, and whether the resource's spec hash has drifted (indicating something else changed the resource). It produces a health score from 0 to 100% and persists the result in DataStorage.</p>
+  <p class="secondary">If the fix failed (score 0), the outcome is recorded in the remediation history. The next time the same type of alert fires, the LLM will see "previous workflow scored 0 -- regression detected" in its investigation context and will avoid repeating the failed approach. This is how the system learns from its mistakes -- not by retraining the model, but by injecting historical outcomes into the investigation prompt.</p>
+
+  <div class="row gap-10" style="align-items:stretch;margin-top:4px">
+    <div class="flow-step green"><div class="step-num">SELECT</div><div class="step-title">Workflow Selection</div><div class="step-detail">Second LLM session searches catalog. Proposes workflow ID. Validated against JSON schema. Up to 3 correction retries.</div></div>
+    <div class="flow-step"><div class="step-num">APPROVE</div><div class="step-title">OPA Policy Gate</div><div class="step-detail">Separate approval.rego evaluates context. Auto-approve or create RemediationApprovalRequest CRD for human review.</div></div>
+    <div class="flow-step green"><div class="step-num">EXECUTE</div><div class="step-title">Workflow Execution</div><div class="step-detail">Tekton PipelineRun, K8s Job, or AWX template. Per-workflow ServiceAccount. Short-lived TokenRequest auth.</div></div>
+    <div class="flow-step green"><div class="step-num">VERIFY</div><div class="step-title">Effectiveness Monitor</div><div class="step-detail">4 dimensions: pod health, alert resolution, metric stability, spec hash drift. Score 0-100%. History feeds future RCA.</div></div>
   </div>
+</div>
+
+<hr>
+
+<!-- ============================================================ -->
+<!-- CLOSING THE LOOP -->
+<!-- ============================================================ -->
+<div class="stack gap-10">
+  <div class="section-label">The Closed Loop</div>
+  <h2>How observability and remediation work together</h2>
+  <p class="secondary">Most tools do one or the other. Diagnostic tools (K8sGPT, HolmesGPT) investigate but don't fix. Automation tools (StackStorm, Event-Driven Ansible) fix but don't investigate -- they rely on static rules to map alerts to actions. Kubernaut is the rare system that does both, and critically, it also verifies and learns.</p>
+  <p class="secondary">The closed loop works like this: an alert fires, the AI investigates the root cause, selects a workflow, the workflow executes through a governed pipeline, the fix is verified, and the outcome feeds back into future investigations. A failed fix does not get repeated. A successful fix builds trust for auto-approval next time. Over time, the system gets more reliable because it accumulates real effectiveness data about which workflows work for which problems.</p>
+
   <div class="callout info">
-    <div class="callout-title">The LLM learns from failure</div>
-    <p class="small secondary">When a fix doesn't work (healthScore = 0), the effectiveness feedback is injected into future investigation context. The LLM sees "previous workflow scored 0 -- regression detected" and avoids repeating failed approaches. When it can't find a good fix, it escalates to a human.</p>
+    <div class="callout-title">Observe &rarr; Investigate &rarr; Select &rarr; Approve &rarr; Execute &rarr; Verify &rarr; Learn &rarr; repeat</div>
+    <p class="small secondary">Every cycle produces data that makes the next cycle better. Failed remediations are flagged in history. Effective workflows build trust scores. The system adapts without retraining the model.</p>
   </div>
 </div>
 
 <hr>
 
-<!-- MINUTE 4: DIFFERENTIATION -->
+<!-- ============================================================ -->
+<!-- TRUST LADDER -->
+<!-- ============================================================ -->
 <div class="stack gap-10">
-  <div class="section-label">Minute 4 -- Differentiation</div>
-  <h2>The depth of K8s remediation</h2>
-  <p class="secondary">Detection and investigation are table stakes. Every monitoring platform does them. Execution and verification are where the market thins out. Kubernaut covers the full depth.</p>
+  <div class="section-label">Adoption Model</div>
+  <h2>Trust Ladder: observation to full autonomy</h2>
+  <p class="secondary">No team flips a switch to full automation on day one. Kubernaut has a progressive trust model that lets you start by watching, build confidence through data, and gradually increase autonomy as the platform proves itself.</p>
+  <div class="row gap-12" style="align-items:stretch">
+    <div class="trust-step active"><div class="row gap-6"><span class="level">L1</span><span class="pill info active" style="font-size:10px">v1.4</span></div><div class="semibold" style="margin-top:4px">Observe</div><p class="small secondary" style="margin-top:4px">Dry-run mode. See what Kubernaut would do without any execution. Full RCA notifications with context. Zero risk.</p></div>
+    <div class="trust-step"><div class="row gap-6"><span class="level">L2</span><span class="pill" style="font-size:10px">v1.3+</span></div><div class="semibold" style="margin-top:4px">Approve</div><p class="small secondary" style="margin-top:4px">Every remediation goes through an approval gate. OPA policy per context. Confidence scores and RCA visible before approval.</p></div>
+    <div class="trust-step"><div class="row gap-6"><span class="level">L3</span><span class="pill" style="font-size:10px">v1.3+</span></div><div class="semibold" style="margin-top:4px">Selective Autonomy</div><p class="small secondary" style="margin-top:4px">Trusted workflows auto-approve. New ones still require human review. Effectiveness scores drive which workflows graduate.</p></div>
+    <div class="trust-step"><div class="row gap-6"><span class="level">L4</span><span class="pill" style="font-size:10px">v1.3+</span></div><div class="semibold" style="margin-top:4px">Full Autonomy</div><p class="small secondary" style="margin-top:4px">All workflows execute without intervention. 4-dimension verification on every run. Rego policy rollback to L3 at any time.</p></div>
+  </div>
+</div>
+
+<hr>
+
+<!-- ============================================================ -->
+<!-- DIFFERENTIATION -->
+<!-- ============================================================ -->
+<div class="stack gap-10">
+  <div class="section-label">Differentiation</div>
+  <h2>What Kubernaut covers that others don't</h2>
   <table>
-    <tr><th>Layer</th><th>What it covers</th><th>Market coverage</th><th>Kubernaut</th></tr>
-    <tr class="striped"><td>1. Signal Intake</td><td>AlertManager webhooks, K8s Events, dedup</td><td>Every platform does this</td><td>Real -- SHA256 fingerprint, Lease dedup</td></tr>
-    <tr class="striped"><td>2. Investigation</td><td>LLM + tools for deep cluster introspection</td><td>K8sGPT, HolmesGPT, Robusta, Komodor</td><td>Real -- 36 client-go tools, two-phase agent</td></tr>
-    <tr class="striped row-info"><td>3. Execution</td><td>Policy-gated, catalog-driven workflow runs</td><td>Few solutions; no pre-approved catalog</td><td>Real -- Tekton + Jobs + AWX, OPA gates</td></tr>
-    <tr class="striped row-success"><td>4. Closing the Loop</td><td>Effectiveness scoring, structured feedback</td><td>No competitor covers this</td><td>Real -- 4-dimension scoring, history feedback</td></tr>
+    <tr><th>Layer</th><th>What it covers</th><th>Who else does this</th><th>Kubernaut</th></tr>
+    <tr class="striped"><td>1. Signal Intake</td><td>AlertManager webhooks, K8s Events, dedup</td><td>Every monitoring platform</td><td>SHA256 fingerprint, Lease dedup</td></tr>
+    <tr class="striped"><td>2. Investigation</td><td>AI-powered root cause analysis</td><td>K8sGPT, HolmesGPT, Robusta, Komodor</td><td>36 client-go tools, two-phase agent</td></tr>
+    <tr class="striped row-info"><td>3. Governed Execution</td><td>Policy-gated, catalog-driven workflow runs</td><td>Few solutions; no pre-approved catalog</td><td>Tekton + Jobs + AWX, OPA gates</td></tr>
+    <tr class="striped row-success"><td>4. Closing the Loop</td><td>Effectiveness scoring, structured feedback</td><td>No competitor covers this fully</td><td>4-dimension scoring, history feedback</td></tr>
   </table>
+
   <div class="grid-2">
     <div class="card">
-      <div class="card-header">ITIL support level coverage <span class="pill info active" style="font-size:10px">39 scenarios</span></div>
+      <div class="card-header">Scenario coverage <span class="pill info active" style="font-size:10px">39 scenarios</span></div>
       <div class="card-body stack gap-4">
         <p class="small"><span class="semibold">L0 (4)</span> -- Signal classification, dedup, cross-namespace, injection defense</p>
         <p class="small"><span class="semibold">L1 (12)</span> -- CrashLoopBackOff, NetworkPolicy, ImagePull, RBAC, route misconfig, SCC</p>
@@ -315,10 +350,10 @@ details .details-body{padding:12px 14px}
     <div class="card">
       <div class="card-header">vs other approaches</div>
       <div class="card-body stack gap-4">
-        <p class="small"><span class="semibold">vs diagnostic-only AI tools</span> (K8sGPT, HolmesGPT) -- They tell you what's wrong. Kubernaut tells you, fixes it, and proves the fix worked.</p>
-        <p class="small"><span class="semibold">vs rule-based automation</span> (StackStorm, EDA) -- Rules do "if X then Y." But the same alert often has 10 root causes. An AI agent can distinguish them; a rule can't.</p>
-        <p class="small"><span class="semibold">vs commercial AIOps</span> (Dynatrace, BigPanda) -- Proprietary AI on proprietary telemetry. Kubernaut is Apache 2.0, works with any LLM and any Prometheus stack.</p>
-        <p class="small"><span class="semibold">vs playbook platforms</span> (Robusta, Rundeck) -- Simpler adoption but no AI investigation, no catalog validation, no effectiveness verification loop.</p>
+        <p class="small"><span class="semibold">vs diagnostic-only AI</span> -- They tell you what's wrong. Kubernaut tells you, fixes it, and proves the fix worked.</p>
+        <p class="small"><span class="semibold">vs rule-based automation</span> -- Rules do "if X then Y." When the same alert has 10 root causes, rules can't distinguish them. An AI agent can.</p>
+        <p class="small"><span class="semibold">vs commercial AIOps</span> -- Proprietary AI on proprietary telemetry. Kubernaut is Apache 2.0, any LLM, any Prometheus.</p>
+        <p class="small"><span class="semibold">vs playbook platforms</span> -- Simpler, but no AI investigation, no catalog validation, no effectiveness verification.</p>
       </div>
     </div>
   </div>
@@ -326,38 +361,39 @@ details .details-body{padding:12px 14px}
 
 <hr>
 
-<!-- MINUTE 5: WHAT'S NEXT -->
+<!-- ============================================================ -->
+<!-- WHAT'S NEXT -->
+<!-- ============================================================ -->
 <div class="stack gap-10">
-  <div class="section-label">Minute 5 -- What's Next</div>
+  <div class="section-label">What's Next</div>
   <h2>v1.5 Agentic Integration (Q2 2026)</h2>
   <div class="callout info">
-    <div class="callout-title">Quick primer: what are MCP and A2A?</div>
-    <p class="small secondary">MCP (Model Context Protocol) is an open standard that lets AI assistants call tools on remote servers -- like a REST API, but designed for AI agents. OpenShift Lightspeed already uses MCP to query cluster resources. A2A (Agent-to-Agent) is how one AI agent delegates an entire task to another AI agent and gets results back. Think of MCP as "calling a function" and A2A as "assigning a ticket."</p>
+    <div class="callout-title">What are MCP and A2A?</div>
+    <p class="small secondary">MCP (Model Context Protocol) is an open standard that lets AI assistants call tools on remote servers -- like a REST API, but designed for AI agents. OpenShift Lightspeed already uses MCP to query cluster resources. A2A (Agent-to-Agent) is how one AI agent delegates an entire task to another AI agent. Think of MCP as "calling a function" and A2A as "assigning a ticket."</p>
   </div>
-  <p class="secondary">Kubernaut is evolving from an autonomous pipeline to a platform that other AI tools can call. Any MCP-compatible assistant (Lightspeed, Cursor, Claude, etc.) can invoke Kubernaut to investigate and fix issues.</p>
+  <p class="secondary">Kubernaut is evolving from an autonomous pipeline to a platform that other AI tools can call. Any MCP-compatible assistant (Lightspeed, Cursor, Claude) can invoke Kubernaut to investigate and fix issues. Any A2A orchestrator can delegate full remediation tasks to it.</p>
   <div class="grid-2">
     <div class="card">
-      <div class="card-header">Interactive: "Let's investigate together" <span class="pill info active" style="font-size:10px">MCP</span></div>
+      <div class="card-header">Interactive collaboration <span class="pill info active" style="font-size:10px">MCP</span></div>
       <div class="card-body stack gap-4">
-        <p class="small">An SRE using Lightspeed or any AI chat can call Kubernaut tools directly:</p>
-        <p class="small"><span class="semibold">investigate</span> -- Start an interactive root cause analysis with live streaming</p>
-        <p class="small"><span class="semibold">select_workflow</span> -- Browse the workflow catalog and pick a fix</p>
-        <p class="small"><span class="semibold">complete_no_action</span> -- Close the case if no remediation is needed</p>
-        <p class="small secondary">The human stays in control. The AI does the digging.</p>
+        <p class="small">An SRE using Lightspeed or any AI chat calls Kubernaut tools directly:</p>
+        <p class="small"><span class="semibold">investigate</span> -- Interactive root cause analysis with live streaming</p>
+        <p class="small"><span class="semibold">select_workflow</span> -- Browse the catalog and pick a fix</p>
+        <p class="small"><span class="semibold">complete_no_action</span> -- Close the case if no fix needed</p>
+        <p class="small secondary">"Let's investigate this together."</p>
       </div>
     </div>
     <div class="card">
-      <div class="card-header">Autonomous: "Fix this, tell me when done" <span class="pill success active" style="font-size:10px">A2A</span></div>
+      <div class="card-header">Autonomous delegation <span class="pill success active" style="font-size:10px">A2A</span></div>
       <div class="card-body stack gap-4">
-        <p class="small">A monitoring agent or orchestrator delegates the entire job to Kubernaut:</p>
+        <p class="small">A monitoring agent delegates the entire job to Kubernaut:</p>
         <p class="small">1. Sends alert or natural language description</p>
         <p class="small">2. Kubernaut investigates, selects fix, executes, verifies</p>
-        <p class="small">3. Returns verified result or escalates with full RCA report</p>
-        <p class="small secondary">No human in the loop unless the policy requires it.</p>
+        <p class="small">3. Returns verified result or escalates with full RCA</p>
+        <p class="small secondary">"Fix this and tell me when it's done."</p>
       </div>
     </div>
   </div>
-  <h3>Roadmap beyond v1.5</h3>
   <table>
     <tr><th>Milestone</th><th>Focus</th><th>Key capabilities</th></tr>
     <tr class="striped row-info"><td>v1.5 (Q2 2026)</td><td>Agentic Integration</td><td>MCP/A2A, RHDH Console Plugin, real-time streaming, NL signal intake</td></tr>
@@ -369,18 +405,20 @@ details .details-body{padding:12px 14px}
 
 <hr>
 
-<!-- MINUTE 6: HONEST ASSESSMENT -->
+<!-- ============================================================ -->
+<!-- HONEST ASSESSMENT -->
+<!-- ============================================================ -->
 <div class="stack gap-10">
-  <div class="section-label">Minute 6 -- Honest Assessment</div>
-  <h2>Code-verified: what's real vs what's aspirational</h2>
-  <p class="secondary">We read every Go source file. Here's what we verified against the actual implementation.</p>
+  <div class="section-label">Honest Assessment</div>
+  <h2>Code-verified: what's real and what's not</h2>
+  <p class="secondary">We read every Go source file in both repositories. Here is what we verified against the actual implementation, separated from what the documentation claims.</p>
   <div class="grid-2">
     <div class="card">
       <div class="card-header">What the code actually does <span class="pill success active" style="font-size:10px">Verified</span></div>
       <div class="card-body stack gap-5">
         <p class="small">36 read-only K8s/Prometheus/log tools via native client-go</p>
         <p class="small">Two-phase LLM investigation (RCA + workflow selection)</p>
-        <p class="small">OPA prepared-query evaluation (not interpreted per-call)</p>
+        <p class="small">OPA prepared-query evaluation (compiled at load, not per-call)</p>
         <p class="small">Tekton PipelineRun + K8s Job execution (envtest-exercised)</p>
         <p class="small">Real MCP go-sdk server with K8s Lease session management</p>
         <p class="small">Shadow agent: real second LLM call per investigation step</p>
@@ -408,7 +446,9 @@ details .details-body{padding:12px 14px}
 
 <hr>
 
+<!-- ============================================================ -->
 <!-- VERDICT -->
+<!-- ============================================================ -->
 <div class="stack gap-10">
   <div class="section-label">Bottom Line</div>
   <div class="grid-3">
@@ -417,97 +457,93 @@ details .details-body{padding:12px 14px}
     <div class="stat warning"><div class="stat-value">1</div><div class="stat-label">Maintainer (risk)</div></div>
   </div>
   <div class="card">
-    <div class="card-header">What to tell your audience <span class="pill info active" style="font-size:10px">Verdict</span></div>
+    <div class="card-header">Summary <span class="pill info active" style="font-size:10px">Verdict</span></div>
     <div class="card-body stack gap-8">
-      <p>Kubernaut is the most comprehensive open-source attempt at closing the alert-to-remediation loop with AI. It's not a diagnostic tool that stops at "here's what's wrong" -- it investigates, selects a fix, executes it, and proves it worked. That full depth is unique in the OSS space.</p>
-      <p>The engineering is genuinely impressive for a solo-authored project: proper CRD patterns, extensive testing, real safety mechanisms. The trust ladder (observe/approve/selective/full autonomy) is the right adoption model for enterprise teams.</p>
-      <p class="semibold">The risk is clear: one maintainer, early stage, and some gaps between documentation claims and code reality. But the architecture is sound, the code quality is high, and the v1.5 agentic direction (MCP/A2A) positions it well for the emerging agent-native operations paradigm.</p>
+      <p>Kubernaut is the most comprehensive open-source attempt at closing the loop from Kubernetes alert to verified remediation. It separates observability (AI investigation with read-only tools) from remediation (catalog-driven workflow execution with OPA governance) and connects them through a CRD-native state machine that is fully observable, crash-recoverable, and auditable.</p>
+      <p>The engineering is genuinely impressive for a solo-authored project: proper CRD patterns, extensive testing, real safety mechanisms. The trust ladder (observe, approve, selective autonomy, full autonomy) is the right adoption model for enterprise operations teams.</p>
+      <p class="semibold">The risk is clear: one maintainer, early stage, and gaps between documentation claims and code reality. But the architecture is sound, the code quality is high, and the v1.5 agentic direction (MCP/A2A) positions it for the emerging agent-native operations paradigm. Judge it by what the code does, not what the README promises.</p>
     </div>
   </div>
 </div>
 
 <hr>
 
-<!-- FAQ: ANTICIPATED QUESTIONS -->
+<!-- ============================================================ -->
+<!-- FAQ -->
+<!-- ============================================================ -->
 <div class="stack gap-10">
   <div class="section-label">Anticipated Questions</div>
   <h2>How is this different from...?</h2>
-  <p class="secondary">Crisp answers for the questions your audience will ask.</p>
 
   <details open>
     <summary>"What about OpenShift Lightspeed?" <span class="pill" style="font-size:10px">OCP native</span></summary>
     <div class="details-body stack gap-6">
       <p class="small semibold">Lightspeed is a conversational assistant. Kubernaut is an autonomous remediation pipeline.</p>
-      <p class="small secondary">Lightspeed answers questions about your cluster ("what pods are failing?") and can query resources via its Observability MCP server. But it does NOT: execute remediation workflows, maintain a workflow catalog, run OPA approval gates, verify fixes worked, or learn from outcomes. It's a Q&amp;A chatbot with cluster read access. Kubernaut is a closed-loop remediation engine.</p>
-      <p class="small secondary">Complementary, not competitive: Kubernaut's MCP tools could be registered AS a Lightspeed MCP server. An SRE could ask Lightspeed "investigate this alert" and Lightspeed would delegate to Kubernaut via MCP. The v1.5 RHDH Console Plugin goes further -- embedding Kubernaut directly in Developer Hub.</p>
+      <p class="small secondary">Lightspeed answers questions about your cluster and can query resources via its Observability MCP server. But it does not execute remediation workflows, maintain a workflow catalog, run OPA approval gates, verify fixes, or learn from outcomes. Kubernaut is a closed-loop remediation engine. They are complementary: Kubernaut's MCP tools could be registered as a Lightspeed MCP server, so an SRE could ask Lightspeed "investigate this alert" and Lightspeed would delegate to Kubernaut.</p>
     </div>
   </details>
 
   <details open>
-    <summary>"What about the OpenShift MCP Server, MCP Gateway, MCP Lifecycle Operator, MCP Catalog?" <span class="pill" style="font-size:10px">OCP native</span></summary>
+    <summary>"What about the OpenShift MCP ecosystem (Server, Gateway, Lifecycle Operator, Catalog)?" <span class="pill" style="font-size:10px">OCP native</span></summary>
     <div class="details-body stack gap-6">
-      <p class="small semibold">Those are infrastructure for MCP servers. Kubernaut is a consumer AND provider of MCP.</p>
-      <p class="small secondary">The OpenShift MCP ecosystem (MCP Server for OCP, MCP Gateway via Connectivity Link, MCP Lifecycle Operator, MCP Catalog in OpenShift AI 3.4) provides the platform for deploying and managing MCP servers. Kubernaut would run ON this infrastructure -- its MCP server deployed via the MCP Lifecycle Operator, registered in the MCP Catalog, routed through the MCP Gateway. Kubernaut is a purpose-built remediation MCP server; the OCP MCP stack is the hosting layer.</p>
-      <p class="small secondary">The OCP MCP Server gives agents read access to cluster resources. Kubernaut gives agents the ability to investigate, select a fix, execute it, and verify the outcome -- with governance at every step.</p>
+      <p class="small semibold">Those are infrastructure for hosting MCP servers. Kubernaut is a purpose-built MCP server that would run on that infrastructure.</p>
+      <p class="small secondary">The OpenShift MCP ecosystem provides the platform for deploying and managing MCP servers. Kubernaut would be deployed via the MCP Lifecycle Operator, registered in the MCP Catalog, and routed through the MCP Gateway. The OCP MCP Server gives agents read access to cluster resources. Kubernaut gives agents the ability to investigate, select a fix, execute it, and verify the outcome.</p>
     </div>
   </details>
 
   <details open>
-    <summary>"What about agent-per-issue patterns? Pulse Agent, ADK OpenShift Agent, KubeHeal?" <span class="pill" style="font-size:10px">agents</span></summary>
+    <summary>"What about agent-per-issue tools (Pulse Agent, ADK OpenShift Agent, KubeHeal)?" <span class="pill" style="font-size:10px">agents</span></summary>
     <div class="details-body stack gap-6">
-      <p class="small semibold">Those are single-agent tools. Kubernaut is a platform with a structured pipeline.</p>
+      <p class="small semibold">Those are single-agent tools that let the LLM apply patches directly. Kubernaut constrains the LLM to a curated catalog.</p>
       <table>
         <tr><th>Aspect</th><th>Agent-per-issue (Pulse, ADK)</th><th>Kubernaut</th></tr>
-        <tr class="striped"><td>Architecture</td><td>Single agent binary, direct LLM-to-kubectl</td><td>11 microservices, CRD state machine</td></tr>
-        <tr class="striped"><td>Investigation</td><td>LLM calls tools ad-hoc</td><td>Structured two-phase pipeline with tool scoping per phase</td></tr>
-        <tr class="striped"><td>Remediation</td><td>Agent generates and applies patches directly</td><td>Catalog-driven: LLM selects from pre-approved workflows</td></tr>
-        <tr class="striped"><td>Safety</td><td>Trust levels (monitor/suggest/auto-fix)</td><td>OPA Rego + approval CRD + shadow agent + sanitization</td></tr>
-        <tr class="striped"><td>State</td><td>In-memory or DB</td><td>All in K8s CRDs (etcd) -- kubectl observable, crash-recoverable</td></tr>
-        <tr class="striped"><td>Verification</td><td>Some rollback support</td><td>4-dimension effectiveness scoring with feedback loop</td></tr>
-        <tr class="striped"><td>Audit</td><td>Varies</td><td>PostgreSQL hash-chain audit trail (FedRAMP-aligned)</td></tr>
-        <tr class="striped"><td>Scale</td><td>Single cluster</td><td>OLM operator, multi-replica, distributed locking</td></tr>
+        <tr class="striped"><td>Architecture</td><td>Single agent, LLM-to-kubectl</td><td>11 microservices, CRD state machine</td></tr>
+        <tr class="striped"><td>Remediation</td><td>LLM generates and applies patches</td><td>LLM selects from pre-approved catalog</td></tr>
+        <tr class="striped"><td>Safety</td><td>Trust levels (monitor/auto-fix)</td><td>OPA + approval CRD + shadow agent + sanitization</td></tr>
+        <tr class="striped"><td>State</td><td>In-memory or DB</td><td>All in K8s CRDs (kubectl observable)</td></tr>
+        <tr class="striped"><td>Verification</td><td>Some rollback support</td><td>4-dimension effectiveness scoring</td></tr>
+        <tr class="striped"><td>Audit</td><td>Varies</td><td>PostgreSQL hash-chain trail</td></tr>
       </table>
-      <p class="small secondary">Key difference: agent-per-issue tools let the LLM generate and apply arbitrary patches. Kubernaut constrains the LLM to selecting from a curated workflow catalog -- the LLM investigates and recommends, but execution is through pre-tested Tekton/Job/Ansible workflows. This is the "AI intelligence + deterministic execution" pattern Red Hat's own AAP team advocates.</p>
+      <p class="small secondary">This is the "AI intelligence + deterministic execution" pattern that Red Hat's own AAP team advocates: the AI recommends, but pre-tested automation executes.</p>
     </div>
   </details>
 
   <details open>
-    <summary>"What about Ansible Automation Platform as the trusted execution layer?" <span class="pill" style="font-size:10px">Red Hat</span></summary>
+    <summary>"What about Ansible Automation Platform?" <span class="pill" style="font-size:10px">Red Hat</span></summary>
     <div class="details-body stack gap-6">
       <p class="small semibold">Kubernaut already uses AAP/AWX as one of three execution engines.</p>
-      <p class="small secondary">Red Hat positions AAP as the "trusted execution layer for AIOps" -- AI recommends, Ansible executes. Kubernaut implements exactly this pattern: the LLM recommends a workflow, OPA gates approval, and execution runs via Tekton OR K8s Jobs OR Ansible/AWX. The Ansible executor in Kubernaut calls AWX job templates via REST API with credentials and polling.</p>
-      <p class="small secondary">The difference: AAP needs something upstream to tell it WHAT to execute and WHEN. That's Event-Driven Ansible for rule-based triggers, or Kubernaut for AI-driven investigation + selection. Kubernaut is the "intelligence layer" that feeds AAP the right playbook at the right time.</p>
+      <p class="small secondary">Red Hat positions AAP as the "trusted execution layer for AIOps." Kubernaut implements this pattern: the LLM recommends a workflow, OPA gates approval, and execution runs via Tekton, K8s Jobs, or Ansible/AWX. The difference: AAP needs something upstream to tell it what to execute and when. That is Event-Driven Ansible for rule-based triggers, or Kubernaut for AI-driven investigation and selection.</p>
     </div>
   </details>
 
   <details open>
-    <summary>"Why not just use Event-Driven Ansible + Dynatrace/ServiceNow?" <span class="pill" style="font-size:10px">architecture</span></summary>
+    <summary>"Why not just Event-Driven Ansible + Dynatrace/ServiceNow?" <span class="pill" style="font-size:10px">architecture</span></summary>
     <div class="details-body stack gap-6">
-      <p class="small semibold">That's the rule-based approach. Kubernaut handles the long tail.</p>
-      <p class="small secondary">EDA + Dynatrace/ServiceNow is the "thermostat" pattern: if CPU exceeds 90%, run scale-up playbook. Works great for known, deterministic scenarios. But when the same alert (CrashLoopBackOff) has 10 different root causes -- bad config, OOM, dependency failure, cert expiry, image pull error -- a static rule can't distinguish them. Kubernaut's LLM investigates the actual cause via 36 tools, then selects the right workflow from the catalog.</p>
-      <p class="small secondary">Real example from the Kubernaut demo: a CrashLoopBackOff where the root cause was a broken ConfigMap pushed via ArgoCD. The LLM traced Pod to logs to ConfigMap to ArgoCD annotations, determined it was GitOps-managed, and selected git-revert (not kubectl patch). A rule-based system would need a specific rule for this exact scenario.</p>
+      <p class="small semibold">That is the rule-based approach. Kubernaut handles the long tail.</p>
+      <p class="small secondary">EDA + Dynatrace is the "thermostat" pattern: if CPU exceeds 90%, run scale-up playbook. Works for known scenarios. But when CrashLoopBackOff has 10 different root causes (bad config, OOM, dependency failure, cert expiry, image pull error), a static rule cannot distinguish them. Kubernaut's AI investigates the actual cause and selects the right workflow.</p>
+      <p class="small secondary">Real example: a CrashLoopBackOff caused by a broken ConfigMap pushed via ArgoCD. The LLM traced Pod to logs to ConfigMap to ArgoCD annotations, determined it was GitOps-managed, and selected git-revert instead of kubectl patch. A rule-based system would need a specific rule for that exact scenario.</p>
     </div>
   </details>
 
   <details>
-    <summary>"Is it safe to let an LLM touch production?" <span class="pill" style="font-size:10px">security</span></summary>
+    <summary>"Is it safe to let an LLM near production?" <span class="pill" style="font-size:10px">security</span></summary>
     <div class="details-body stack gap-6">
       <p class="small semibold">The LLM never touches production. It only reads and recommends.</p>
-      <p class="small secondary">Every single agent tool is read-only (verified from code). The LLM cannot create, patch, delete, or exec into anything. It investigates via read-only K8s API calls and proposes a workflow ID from the catalog. The actual mutation happens through a separate WorkflowExecution controller that runs pre-approved Tekton Pipelines or K8s Jobs with dedicated per-workflow ServiceAccounts.</p>
+      <p class="small secondary">Every agent tool is read-only (verified from code). The LLM investigates via read-only K8s API calls and proposes a workflow ID from the catalog. Mutations happen through a separate WorkflowExecution controller with dedicated per-workflow ServiceAccounts.</p>
       <div class="stack gap-4">
-        <p class="small">Defense layers (all code-verified):</p>
-        <p class="small secondary">1. Sanitization pipeline: credential scrubbing, injection detection</p>
-        <p class="small secondary">2. Anomaly detection: circuit breaker on tool abuse</p>
-        <p class="small secondary">3. OPA Rego: policy gates on approval</p>
-        <p class="small secondary">4. Shadow agent: second LLM reviews each step</p>
+        <p class="small">Six defense layers (all code-verified):</p>
+        <p class="small secondary">1. Sanitization: credential scrubbing + prompt injection detection</p>
+        <p class="small secondary">2. Anomaly detection: circuit breaker on excessive tool calls</p>
+        <p class="small secondary">3. OPA Rego: policy gates on every remediation</p>
+        <p class="small secondary">4. Shadow agent: second LLM reviews each investigation step</p>
         <p class="small secondary">5. Approval CRD: human gate for high-risk actions</p>
-        <p class="small secondary">6. Dry-run mode: see what it would do without execution</p>
+        <p class="small secondary">6. Dry-run mode: full RCA without any execution</p>
       </div>
     </div>
   </details>
 </div>
 
-<p class="small quaternary" style="text-align:center;margin-top:24px">Assessment based on source code analysis of jordigilh/kubernaut (v1.4.0) and jordigilh/kubernaut-operator (v1.5.0-rc5). Presentation deck by Jordi Gil (Red Hat). Independent code review May 2026.</p>
+<p class="small quaternary" style="text-align:center;margin-top:24px">Assessment based on source code analysis of jordigilh/kubernaut (v1.4.0) and jordigilh/kubernaut-operator (v1.5.0-rc5). Independent code review, May 2026.</p>
 
 </div>
 </body>
