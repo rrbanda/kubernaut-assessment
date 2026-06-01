@@ -124,9 +124,28 @@ details .details-body{padding:12px 14px}
 
 <!-- ARCHITECTURE -->
 <div class="stack gap-10">
-  <div class="section-label">Architecture Overview</div>
-  <h2>11 microservices, 9 CRDs, one pipeline</h2>
-  <p class="secondary">Kubernaut is not a single binary -- it's a full microservices platform where every service has a dedicated role, and all inter-service communication happens through Kubernetes CRD status transitions. All state lives in etcd. Every decision is observable via <code>kubectl get</code>.</p>
+  <div class="section-label">Solution Architecture</div>
+  <h2>How Kubernaut works, end to end</h2>
+
+  <h3>The big picture</h3>
+  <p class="secondary">Kubernaut is a CRD-native microservices platform written in Go. It consists of 11 independently deployed services, each responsible for one stage of the remediation lifecycle. Services do not call each other directly -- instead, each service watches a Kubernetes Custom Resource (CRD), performs its work, and writes results back to the CRD status. A central controller called the RemediationOrchestrator reads those statuses and advances the pipeline by creating the next CRD. This means all state lives in etcd, every decision is visible via <code>kubectl get</code>, and if any service crashes, the controller-runtime reconciliation loop automatically restarts from the last persisted state.</p>
+
+  <h3>What happens when an alert fires</h3>
+  <p class="secondary">When Prometheus AlertManager fires an alert, it sends a webhook POST to the Gateway service. The Gateway resolves the alert's target resource to its owner (e.g., Pod to Deployment via ownerReferences), computes a SHA256 fingerprint of <code>namespace:kind:name</code>, and checks whether an active RemediationRequest already exists for that fingerprint. If it's a duplicate, it patches the existing RR's dedup counter and returns HTTP 202. If it's new, it creates a <code>RemediationRequest</code> CRD in the controller namespace.</p>
+  <p class="secondary">The RemediationOrchestrator (RO) picks up the new RR and starts the pipeline. First, it creates a <code>SignalProcessing</code> CRD. The SignalProcessing controller enriches the signal with Kubernetes context -- it walks the ownerReference chain to find the root owner, detects infrastructure labels (GitOps, Helm, HPA, PDB, mesh), and evaluates four OPA Rego prepared queries to classify environment, severity, priority, and custom labels. When SP completes, RO creates an <code>AIAnalysis</code> CRD.</p>
+
+  <h3>How the AI agent investigates</h3>
+  <p class="secondary">The AIAnalysis controller sends an HTTP request to the KubernautAgent (KA) service. KA runs two separate LLM sessions for each incident -- not one continuous conversation. In the first session (RCA), the LLM is given the alert details and access to 36 read-only tools: kubectl-style resource gets/lists/describes via the dynamic client-go API, Prometheus instant and range queries, pod log retrieval, metrics API queries, and resource context lookups. The LLM calls these tools in a loop (up to 40 turns) until it determines the root cause, then submits a structured JSON result containing a causal chain, confidence score, and due diligence assessment.</p>
+  <p class="secondary">In the second session (Workflow Selection), the LLM receives the RCA findings plus enrichment data (owner chain, remediation history, detected labels) and searches the workflow catalog stored in DataStorage. It proposes a workflow ID, which is validated against the catalog's JSON schema. If the proposal is invalid, the system retries with correction context up to 3 times. If no valid workflow is found, the incident is escalated to a human.</p>
+  <p class="secondary">A critical architectural decision: <strong>the LLM's tools are entirely read-only</strong>. The agent cannot create, patch, delete, or exec into any Kubernetes resource. It only investigates and recommends. The actual cluster mutation happens later through a completely separate execution path.</p>
+
+  <h3>Approval, execution, and verification</h3>
+  <p class="secondary">After AI analysis, the AIAnalysis controller evaluates a separate <code>approval.rego</code> OPA policy. If the policy requires human approval (based on confidence threshold, severity, environment), RO creates a <code>RemediationApprovalRequest</code> CRD and the pipeline pauses in <code>AwaitingApproval</code> until a human approves or rejects via Slack, the Console UI, or direct CRD status update.</p>
+  <p class="secondary">Once approved (or auto-approved), RO creates a <code>WorkflowExecution</code> CRD. The WorkflowExecution controller looks up the workflow definition from the catalog and runs it through one of three execution engines: a Tekton PipelineRun (with OCI bundle resolver), a Kubernetes batch/v1 Job, or an Ansible job template via the AWX/AAP REST API. Each workflow runs with its own dedicated ServiceAccount and short-lived TokenRequest credentials -- the LLM never has the permissions to run the fix itself.</p>
+  <p class="secondary">After execution completes, RO creates an <code>EffectivenessAssessment</code> CRD. The EffectivenessMonitor checks four dimensions: pod health, whether the original alert has resolved, Prometheus metric stability, and whether the resource spec hash has drifted (indicating something else changed). It produces a health score from 0-100% and writes the result back. If the fix failed (score 0), the outcome is recorded in DataStorage's remediation history, and next time the same type of alert fires, the LLM will see "previous workflow scored 0 -- regression detected" in its enrichment context and avoid repeating the failed approach.</p>
+  <p class="secondary">Throughout the entire pipeline, every LLM call, tool invocation, decision, and outcome is recorded as a typed audit event in a PostgreSQL table with hash-chain integrity, providing a full compliance-grade trail of every automated action.</p>
+
+  <h3>Architecture at a glance</h3>
 
   <!-- Architecture Diagram -->
   <div style="border:1px solid var(--stroke-primary);border-radius:8px;padding:20px;background:var(--fill-tertiary);overflow-x:auto">
@@ -231,23 +250,22 @@ details .details-body{padding:12px 14px}
 
 <hr>
 
-<!-- HOW IT WORKS (PIPELINE DETAIL) -->
+<!-- PIPELINE QUICK REFERENCE -->
 <div class="stack gap-10">
-  <div class="section-label">Pipeline Detail</div>
-  <h2>The remediation pipeline: 5 phases</h2>
-  <p class="secondary">Every phase is a Kubernetes CRD with status transitions. All state in etcd. All communication via CRD status. Standard kubectl tooling. 9 purpose-built CRDs define the entire lifecycle.</p>
+  <div class="section-label">Pipeline Quick Reference</div>
+  <h2>The 5 phases at a glance</h2>
 
   <div class="callout neutral">
-    <div class="callout-title">How the AI investigation works (for non-AI folks)</div>
-    <p class="small secondary">Imagine an SRE who can only read your cluster, never write. They run kubectl get, check logs, query Prometheus, follow owner references -- in a loop -- until they find the root cause. Then they look through your approved runbook catalog and recommend the right fix. That is what the AI agent does, except it's software calling 36 typed Go functions against the K8s API. It cannot create, patch, or delete anything. It only reads and recommends.</p>
+    <div class="callout-title">The simple version (for non-AI folks)</div>
+    <p class="small secondary">Imagine a very diligent SRE who can only read your cluster, never write. They run kubectl get, check logs, query Prometheus, follow owner references -- in a loop -- until they find the root cause. Then they look through your approved runbook catalog, pick the right fix, and hand it to a separate system that actually applies it. That is what the AI agent does, except it's software calling typed Go functions against the K8s API. The "separate system" is Tekton, a K8s Job, or Ansible.</p>
   </div>
 
   <div class="row gap-10" style="align-items:stretch">
-    <div class="flow-step"><div class="step-num">1 <span class="pill" style="font-size:10px">seconds</span></div><div class="step-title">Signal Processing</div><div class="step-detail">AlertManager webhooks + K8s Events. OPA/Rego classification (severity, priority, environment). SHA256 fingerprint dedup.</div></div>
-    <div class="flow-step accent"><div class="step-num">2 <span class="pill" style="font-size:10px">2-5 min</span></div><div class="step-title">AI Investigation</div><div class="step-detail">An AI model calls 36 read-only Go functions in a loop -- kubectl-get, prometheus-query, fetch-logs -- until it finds the root cause. Then it searches the workflow catalog and picks the right fix.</div></div>
-    <div class="flow-step"><div class="step-num">3 <span class="pill" style="font-size:10px">auto or human</span></div><div class="step-title">Approval Gate</div><div class="step-detail">OPA/Rego policy evaluates every action. Auto-approve low-risk, manual review via Slack/Console for high-risk. Operator can override params.</div></div>
-    <div class="flow-step"><div class="step-num">4 <span class="pill" style="font-size:10px">varies</span></div><div class="step-title">Execution</div><div class="step-detail">Tekton Pipelines, K8s Jobs, or Ansible/AWX. Per-workflow ServiceAccount. Short-lived TokenRequest auth.</div></div>
-    <div class="flow-step"><div class="step-num">5 <span class="pill" style="font-size:10px">5 min</span></div><div class="step-title">Effectiveness</div><div class="step-detail">Alert resolution confirmed. Spec hash drift detection. Health scoring (0-100%). Outcomes feed future investigations.</div></div>
+    <div class="flow-step"><div class="step-num">1 <span class="pill" style="font-size:10px">seconds</span></div><div class="step-title">Signal Processing</div><div class="step-detail">AlertManager webhook arrives. Gateway deduplicates by SHA256 fingerprint. OPA/Rego classifies severity, priority, and environment.</div></div>
+    <div class="flow-step accent"><div class="step-num">2 <span class="pill" style="font-size:10px">2-5 min</span></div><div class="step-title">AI Investigation</div><div class="step-detail">Two separate LLM sessions: first investigates root cause with 36 read-only tools, then searches the workflow catalog and picks a fix. Up to 40 tool-calling turns per session.</div></div>
+    <div class="flow-step"><div class="step-num">3 <span class="pill" style="font-size:10px">auto or human</span></div><div class="step-title">Approval Gate</div><div class="step-detail">Separate OPA/Rego policy evaluates the proposed remediation. Auto-approve if low-risk, or create a RemediationApprovalRequest CRD for human review.</div></div>
+    <div class="flow-step"><div class="step-num">4 <span class="pill" style="font-size:10px">varies</span></div><div class="step-title">Execution</div><div class="step-detail">WorkflowExecution controller runs the fix via Tekton PipelineRun, K8s Job, or AWX job template. Dedicated per-workflow ServiceAccount with short-lived tokens.</div></div>
+    <div class="flow-step"><div class="step-num">5 <span class="pill" style="font-size:10px">5 min</span></div><div class="step-title">Effectiveness</div><div class="step-detail">EffectivenessMonitor checks 4 dimensions: pod health, alert resolution, metric stability, spec hash drift. Score (0-100%) feeds future remediation context.</div></div>
   </div>
 </div>
 
